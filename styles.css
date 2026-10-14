@@ -851,7 +851,7 @@
 	display: flex;
 	flex-wrap: nowrap;
 	align-items: baseline;
-	column-gap: 5ch;
+	gap: 0 5ch;
 	white-space: nowrap;
 	overflow-x: auto;
 	scrollbar-width: none;
@@ -1146,7 +1146,7 @@
 .arl-benvenuto { text-align: left; padding: 18px 4px; }
 .arl-benvenuto h3 { margin-top: 0; }
 
-.arl-oculto { display: none !important; }
+.arl-oculto.arl-oculto.arl-oculto { display: none; }
 .arl-forte { font-weight: 600; }
 .arl-progress-anteprima { width: 65%; }
 .arl-vl-sfondo { background-position: center; }

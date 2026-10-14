@@ -1,3 +1,15 @@
+# Books and Reviews 1.0.1
+
+Maintenance release: code-quality fixes requested by the Obsidian review.
+
+- Uses CSS classes instead of inline styles for show/hide and static styling.
+- Language detection through Obsidian's `getLanguage()`; minimum Obsidian version is now **1.8.0**.
+- Safer typing of frontmatter updates, `instanceof TFile` checks and Obsidian DOM helpers.
+- Virtual library: faster redraw, sorting and drag-and-drop, lighter background image, bilingual **Guide to sets** and a welcome screen for an empty library.
+- Build: `builtin-modules` replaced by Node's `module.builtinModules`.
+
+---
+
 # Books and Reviews 1.0.0
 
 First public release.

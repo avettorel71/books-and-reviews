@@ -1,5 +1,6 @@
 import {
 	App,
+	getLanguage,
 	FuzzySuggestModal,
 	ItemView,
 	Menu,
@@ -20,13 +21,6 @@ const VIEW_TYPE = "book-review-algorithm-view";
 /* ------------------------------------------------------------------ */
 
 const TIPO = "recensione-arl";
-
-interface Categoria {
-	id: string;
-	nome: string;
-	descr: string;
-	domande: string[];
-}
 
 import SET_IT_ROMANZI from "./sets/it/Recensione Romanzi.md";
 import SET_IT_SAGGI from "./sets/it/Recensione Saggi.md";
@@ -556,13 +550,13 @@ function parseSet(testo: string): EsitoParse {
 		const sg = /^soglie\s*:\s*(.+)$/im.exec(fm[1]);
 		if (sg) {
 			const valori = pulisciValore(sg[1])
-				.split(/[\/;]|,(?=\s)/)
+				.split(/[/;]|,(?=\s)/)
 				.map((x) => parseFloat(x.trim().replace(",", ".")));
 			if (soglieValide(valori) === null) soglieSet = valori;
 			else errori.push("le soglie delle stelle non sono valide (servono 4 valori crescenti tra 0 e 10, per esempio «3 / 5 / 7 / 9»)");
 		}
 		const co = /^colori\s*:\s*(.+)$/im.exec(fm[1]);
-		if (co) coloriSet = coloriValidi(pulisciValore(co[1]).split(/[\/;,]/).map((x) => x.trim()));
+		if (co) coloriSet = coloriValidi(pulisciValore(co[1]).split(/[/;,]/).map((x) => x.trim()));
 	}
 
 	const categorie: SetCategoria[] = [];
@@ -942,9 +936,7 @@ function normalizzaCopertina(testo: string): string {
 }
 
 function leggiLibro(app: App, file: TFile): Libro | null {
-	const fm = app.metadataCache.getFileCache(file)?.frontmatter as
-		| Record<string, unknown>
-		| undefined;
+	const fm = app.metadataCache.getFileCache(file)?.frontmatter;
 	if (!fm || fm.tipo !== TIPO) return null;
 
 	const risposte: Record<string, string> = {};
@@ -1947,7 +1939,7 @@ export default class BooksAndReviewsPlugin extends Plugin {
 			// primo avvio: usa la lingua di Obsidian
 			let loc = "";
 			try {
-				loc = window.localStorage.getItem("language") ?? "";
+				loc = getLanguage();
 			} catch {
 				/* ignora */
 			}
@@ -2265,7 +2257,7 @@ export default class BooksAndReviewsPlugin extends Plugin {
 		let n = 0;
 		for (const l of this.tuttiILibri()) {
 			if (l.set.toLowerCase() !== vecchio.toLowerCase()) continue;
-			await this.app.fileManager.processFrontMatter(l.file, (f) => {
+			await this.app.fileManager.processFrontMatter(l.file, (f: Record<string, unknown>) => {
 				f.set = nuovo;
 			});
 			n++;
@@ -2332,7 +2324,7 @@ export default class BooksAndReviewsPlugin extends Plugin {
 	/** Salva la galleria: proprietà `galleria` (collegamenti) e immagini incorporate nel testo della nota. */
 	async salvaGalleria(file: TFile, lista: string[], testi: string[] = []) {
 		const tt = lista.map((_, i) => pulisciDidascalia(testi[i] ?? ""));
-		await this.app.fileManager.processFrontMatter(file, (f) => {
+		await this.app.fileManager.processFrontMatter(file, (f: Record<string, unknown>) => {
 			if (lista.length) f.galleria = lista.map((x, i) => (tt[i] ? `[[${x}]] | ${tt[i]}` : `[[${x}]]`));
 			else delete f.galleria;
 		});
@@ -2360,7 +2352,7 @@ export default class BooksAndReviewsPlugin extends Plugin {
 			const ultima = ord.reduce((m, r) => Math.max(m, r.a), 0);
 			if (!fine && pagineTotali > 0 && ultima >= pagineTotali) fine = ord[ord.length - 1].data;
 		}
-		await this.app.fileManager.processFrontMatter(file, (f) => {
+		await this.app.fileManager.processFrontMatter(file, (f: Record<string, unknown>) => {
 			if (ord.length) f.letture = ord.map((r) => `${r.data} | ${r.da} | ${r.a}`);
 			else delete f.letture;
 			if (inizio && !inizioAttuale) f.inizio_lettura = inizio;
@@ -2475,7 +2467,7 @@ export default class BooksAndReviewsPlugin extends Plugin {
 		fm: Record<string, string | number | boolean>,
 		rimuovi: string[]
 	) {
-		await this.app.fileManager.processFrontMatter(file, (f) => {
+		await this.app.fileManager.processFrontMatter(file, (f: Record<string, unknown>) => {
 			Object.assign(f, fm);
 			for (const k of rimuovi) delete f[k];
 		});
@@ -2533,7 +2525,7 @@ export default class BooksAndReviewsPlugin extends Plugin {
 			.map((p) => ({ nome: p.nome.trim().replace(/\s+/g, " "), descrizione: p.descrizione.trim().replace(/\s+/g, " ") }))
 			.filter((p) => p.nome)
 			.map((p) => (p.descrizione ? `${p.nome}${SEP_PERSONAGGIO}${p.descrizione}` : p.nome));
-		await this.app.fileManager.processFrontMatter(file, (f) => {
+		await this.app.fileManager.processFrontMatter(file, (f: Record<string, unknown>) => {
 			if (righe.length) f.personaggi = righe;
 			else delete f.personaggi;
 		});
@@ -2555,7 +2547,7 @@ export default class BooksAndReviewsPlugin extends Plugin {
 
 	/** Valutazione manuale: imposta set e ARL direttamente, senza domande. */
 	async salvaManuale(file: TFile, setNome: string, arl: number) {
-		await this.app.fileManager.processFrontMatter(file, (f) => {
+		await this.app.fileManager.processFrontMatter(file, (f: Record<string, unknown>) => {
 			for (const k of Object.keys(f)) {
 				if (k.startsWith("risposte_") || k.startsWith("punteggio_")) delete f[k];
 			}
@@ -2568,7 +2560,7 @@ export default class BooksAndReviewsPlugin extends Plugin {
 
 	/** Segna un libro come restituito (o di nuovo in prestito). */
 	async impostaRestituito(file: TFile, restituito: boolean) {
-		await this.app.fileManager.processFrontMatter(file, (f) => {
+		await this.app.fileManager.processFrontMatter(file, (f: Record<string, unknown>) => {
 			if (restituito) f.restituito = true;
 			else delete f.restituito;
 		});
@@ -2622,9 +2614,7 @@ export default class BooksAndReviewsPlugin extends Plugin {
 		assenti: string[] = []
 	) {
 		for (let i = 0; i < 30; i++) {
-			const c = this.app.metadataCache.getFileCache(file)?.frontmatter as
-				| Record<string, unknown>
-				| undefined;
+			const c = this.app.metadataCache.getFileCache(file)?.frontmatter;
 			if (
 				c &&
 				Object.keys(fm).every((k) => String(c[k]) === String(fm[k])) &&
@@ -3083,7 +3073,7 @@ class BookFormView {
 			)
 			.addButton((b) =>
 				b.setButtonText("Dal computer…").onClick(() => {
-					const sel = document.createElement("input");
+					const sel = createEl("input");
 					sel.type = "file";
 					sel.accept = "image/*";
 					sel.onchange = async () => {
@@ -3997,13 +3987,13 @@ class ArchiveView {
 				griglia.createDiv({ cls: "arl-vuoto", text: "Nessuna immagine: aggiungine una." });
 				return;
 			}
-			const visibili = voci.filter((v) => v.f);
-			const urls = visibili.map((v) => ({
-				url: this.plugin.urlImmagine(v.f as TFile),
-				nome: (v.f as TFile).name,
-				testo: testi[v.i] ?? "",
-				indice: v.i,
-			}));
+			const visibili = voci.filter((v) => v.f instanceof TFile);
+			const urls: { url: string; nome: string; testo: string; indice: number }[] = [];
+			for (const v of visibili) {
+				if (v.f instanceof TFile) {
+					urls.push({ url: this.plugin.urlImmagine(v.f), nome: v.f.name, testo: testi[v.i] ?? "", indice: v.i });
+				}
+			}
 			for (const v of voci) {
 				const cella = griglia.createDiv({ cls: "arl-gal-cella" });
 				if (v.f) {
@@ -4082,7 +4072,7 @@ class ArchiveView {
 			)
 			.addButton((b) =>
 				b.setButtonText("Dal computer…").onClick(() => {
-					const sel = document.createElement("input");
+					const sel = createEl("input");
 					sel.type = "file";
 					sel.accept = "image/*";
 					sel.multiple = true;
@@ -5674,7 +5664,7 @@ class LibreriaVirtualeView implements Vista {
 			if (scala === 1 && sfoca === 0) return this.plugin.urlImmagine(f); // già leggera
 			const cw = Math.max(1, Math.round(bmp.width * scala));
 			const ch = Math.max(1, Math.round(bmp.height * scala));
-			const cv = document.createElement("canvas");
+			const cv = createEl("canvas");
 			cv.width = cw;
 			cv.height = ch;
 			const ctx = cv.getContext("2d");
@@ -5906,7 +5896,7 @@ class LibreriaVirtualeView implements Vista {
 			return;
 		}
 		// si costruisce fuori dalla pagina e si inserisce in un colpo solo: un solo layout
-		const nuovo = document.createElement("div");
+		const nuovo = createDiv();
 		const colori = new Map<string, { bg: string; fg: string }>();
 		const ripiani = Math.ceil(this.ord.length / n);
 		for (let r = 0; r < ripiani; r++) {
@@ -5957,7 +5947,7 @@ class LibreriaVirtualeView implements Vista {
 	private collegaEventi() {
 		const el = this.scaffale;
 		const libroDa = (t: EventTarget | null): HTMLElement | null =>
-			t instanceof Element ? (t.closest(".arl-vl-libro") as HTMLElement | null) : null;
+			t instanceof Element ? t.closest<HTMLElement>(".arl-vl-libro") : null;
 		const indiceDi = (b: HTMLElement) => Number(b.dataset.i);
 
 		el.addEventListener("mouseover", (ev) => {
@@ -6010,7 +6000,7 @@ class LibreriaVirtualeView implements Vista {
 				cls = dopo ? "ins-dopo" : "ins-prima";
 				dest = indiceDi(b) + (dopo ? 1 : 0);
 			} else {
-				const riga = ev.target instanceof Element ? (ev.target.closest(".arl-vl-riga") as HTMLElement | null) : null;
+				const riga = ev.target instanceof Element ? ev.target.closest<HTMLElement>(".arl-vl-riga") : null;
 				if (!riga) return;
 				bersaglio = riga;
 				cls = "is-dest";
@@ -6620,19 +6610,21 @@ class ARLSettingTab extends PluginSettingTab {
 					);
 					riga.classList.add(sotto ? "arl-col-sotto" : "arl-col-sopra");
 				});
-				riga.addEventListener("drop", async (ev) => {
-					if (da < 0) return;
-					ev.preventDefault();
-					const r = riga.getBoundingClientRect();
-					let a = i + (ev.clientY > r.top + r.height / 2 ? 1 : 0);
-					const ordine = [...s.colonneOrdine];
-					const [spostata] = ordine.splice(da, 1);
-					if (da < a) a--;
-					ordine.splice(a, 0, spostata);
-					s.colonneOrdine = ordine;
-					da = -1;
-					await this.plugin.salvaImpostazioni();
-					disegnaColonne();
+				riga.addEventListener("drop", (ev) => {
+					void (async () => {
+						if (da < 0) return;
+						ev.preventDefault();
+						const r = riga.getBoundingClientRect();
+						let a = i + (ev.clientY > r.top + r.height / 2 ? 1 : 0);
+						const ordine = [...s.colonneOrdine];
+						const [spostata] = ordine.splice(da, 1);
+						if (da < a) a--;
+						ordine.splice(a, 0, spostata);
+						s.colonneOrdine = ordine;
+						da = -1;
+						await this.plugin.salvaImpostazioni();
+						disegnaColonne();
+					})();
 				});
 			});
 		};
@@ -6824,7 +6816,7 @@ class ARLSettingTab extends PluginSettingTab {
 			);
 			imp.addButton((b) =>
 				b.setButtonText("Dal computer…").onClick(() => {
-					const sel = document.createElement("input");
+					const sel = createEl("input");
 					sel.type = "file";
 					sel.accept = "image/*";
 					sel.onchange = async () => {

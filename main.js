@@ -327,12 +327,12 @@ function parseSet(testo) {
     if (m) nome = pulisciValore(m[1]);
     const sg = /^soglie\s*:\s*(.+)$/im.exec(fm[1]);
     if (sg) {
-      const valori = pulisciValore(sg[1]).split(/[\/;]|,(?=\s)/).map((x) => parseFloat(x.trim().replace(",", ".")));
+      const valori = pulisciValore(sg[1]).split(/[/;]|,(?=\s)/).map((x) => parseFloat(x.trim().replace(",", ".")));
       if (soglieValide(valori) === null) soglieSet = valori;
       else errori.push("le soglie delle stelle non sono valide (servono 4 valori crescenti tra 0 e 10, per esempio \xAB3 / 5 / 7 / 9\xBB)");
     }
     const co = /^colori\s*:\s*(.+)$/im.exec(fm[1]);
-    if (co) coloriSet = coloriValidi(pulisciValore(co[1]).split(/[\/;,]/).map((x) => x.trim()));
+    if (co) coloriSet = coloriValidi(pulisciValore(co[1]).split(/[/;,]/).map((x) => x.trim()));
   }
   const categorie = [];
   const idEspliciti = /* @__PURE__ */ new Map();
@@ -1547,7 +1547,7 @@ var BooksAndReviewsPlugin = class extends import_obsidian.Plugin {
     this.ripristinaBarre();
   }
   async caricaImpostazioni() {
-    var _a, _b;
+    var _a;
     const d = (_a = await this.loadData()) != null ? _a : {};
     const s = { ...DEFAULTS, ...d };
     if (Array.isArray(d.pesi) && d.pesi.length === 5) {
@@ -1564,7 +1564,7 @@ var BooksAndReviewsPlugin = class extends import_obsidian.Plugin {
     if (d.lingua !== "it" && d.lingua !== "en") {
       let loc = "";
       try {
-        loc = (_b = window.localStorage.getItem("language")) != null ? _b : "";
+        loc = (0, import_obsidian.getLanguage)();
       } catch (e) {
       }
       s.lingua = loc.toLowerCase().startsWith("it") || loc === "" ? "it" : "en";
@@ -2532,7 +2532,7 @@ var BookFormView = class {
       })
     ).addButton(
       (b) => b.setButtonText("Dal computer\u2026").onClick(() => {
-        const sel = document.createElement("input");
+        const sel = createEl("input");
         sel.type = "file";
         sel.accept = "image/*";
         sel.onchange = async () => {
@@ -3279,22 +3279,20 @@ var ArchiveView = class {
       await this.plugin.salvaGalleria(l.file, lista, testi);
     };
     const disegna = () => {
+      var _a;
       griglia.empty();
       const voci = lista.map((d) => ({ d, f: this.plugin.fileCopertina(d, l.file.path) })).map((v, i) => ({ ...v, i }));
       if (voci.length === 0) {
         griglia.createDiv({ cls: "arl-vuoto", text: "Nessuna immagine: aggiungine una." });
         return;
       }
-      const visibili = voci.filter((v) => v.f);
-      const urls = visibili.map((v) => {
-        var _a;
-        return {
-          url: this.plugin.urlImmagine(v.f),
-          nome: v.f.name,
-          testo: (_a = testi[v.i]) != null ? _a : "",
-          indice: v.i
-        };
-      });
+      const visibili = voci.filter((v) => v.f instanceof import_obsidian.TFile);
+      const urls = [];
+      for (const v of visibili) {
+        if (v.f instanceof import_obsidian.TFile) {
+          urls.push({ url: this.plugin.urlImmagine(v.f), nome: v.f.name, testo: (_a = testi[v.i]) != null ? _a : "", indice: v.i });
+        }
+      }
       for (const v of voci) {
         const cella = griglia.createDiv({ cls: "arl-gal-cella" });
         if (v.f) {
@@ -3308,9 +3306,9 @@ var ArchiveView = class {
         }
         const sotto = cella.createDiv({ cls: "arl-gal-didascalia" });
         const mostraTesto = () => {
-          var _a;
+          var _a2;
           sotto.empty();
-          const t = (_a = testi[v.i]) != null ? _a : "";
+          const t = (_a2 = testi[v.i]) != null ? _a2 : "";
           if (t) sotto.createSpan({ cls: "arl-gal-testo", text: t });
           const mod = sotto.createEl("button", { text: "\u270E", cls: "arl-gal-mod" });
           mod.setAttr("aria-label", "Modifica didascalia");
@@ -3368,7 +3366,7 @@ var ArchiveView = class {
       })
     ).addButton(
       (b) => b.setButtonText("Dal computer\u2026").onClick(() => {
-        const sel = document.createElement("input");
+        const sel = createEl("input");
         sel.type = "file";
         sel.accept = "image/*";
         sel.multiple = true;
@@ -4814,7 +4812,7 @@ var LibreriaVirtualeView = class {
       if (scala === 1 && sfoca === 0) return this.plugin.urlImmagine(f);
       const cw = Math.max(1, Math.round(bmp.width * scala));
       const ch = Math.max(1, Math.round(bmp.height * scala));
-      const cv = document.createElement("canvas");
+      const cv = createEl("canvas");
       cv.width = cw;
       cv.height = ch;
       const ctx = cv.getContext("2d");
@@ -5018,7 +5016,7 @@ var LibreriaVirtualeView = class {
       el.createDiv({ cls: "arl-vuoto", text: "Nessun libro in libreria. Usa \xABNuovo libro\xBB per aggiungere il primo." });
       return;
     }
-    const nuovo = document.createElement("div");
+    const nuovo = createDiv();
     const colori = /* @__PURE__ */ new Map();
     const ripiani = Math.ceil(this.ord.length / n);
     for (let r = 0; r < ripiani; r++) {
@@ -5601,19 +5599,21 @@ var ARLSettingTab = class extends import_obsidian.PluginSettingTab {
           );
           riga.classList.add(sotto ? "arl-col-sotto" : "arl-col-sopra");
         });
-        riga.addEventListener("drop", async (ev) => {
-          if (da < 0) return;
-          ev.preventDefault();
-          const r = riga.getBoundingClientRect();
-          let a = i + (ev.clientY > r.top + r.height / 2 ? 1 : 0);
-          const ordine = [...s.colonneOrdine];
-          const [spostata] = ordine.splice(da, 1);
-          if (da < a) a--;
-          ordine.splice(a, 0, spostata);
-          s.colonneOrdine = ordine;
-          da = -1;
-          await this.plugin.salvaImpostazioni();
-          disegnaColonne();
+        riga.addEventListener("drop", (ev) => {
+          void (async () => {
+            if (da < 0) return;
+            ev.preventDefault();
+            const r = riga.getBoundingClientRect();
+            let a = i + (ev.clientY > r.top + r.height / 2 ? 1 : 0);
+            const ordine = [...s.colonneOrdine];
+            const [spostata] = ordine.splice(da, 1);
+            if (da < a) a--;
+            ordine.splice(a, 0, spostata);
+            s.colonneOrdine = ordine;
+            da = -1;
+            await this.plugin.salvaImpostazioni();
+            disegnaColonne();
+          })();
         });
       });
     };
@@ -5744,7 +5744,7 @@ var ARLSettingTab = class extends import_obsidian.PluginSettingTab {
       );
       imp.addButton(
         (b) => b.setButtonText("Dal computer\u2026").onClick(() => {
-          const sel = document.createElement("input");
+          const sel = createEl("input");
           sel.type = "file";
           sel.accept = "image/*";
           sel.onchange = async () => {

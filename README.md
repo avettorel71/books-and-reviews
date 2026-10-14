@@ -87,7 +87,7 @@
 
 On first start the plugin creates the evaluation-set notes (in the language you selected) and the folders it needs.
 
-Requires Obsidian **1.7.2** or later.
+Requires Obsidian **1.8.0** or later.
 
 ## Quick start
 
