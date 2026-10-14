@@ -1390,7 +1390,7 @@ function percorsoCurva(p) {
   return d;
 }
 var CONTA_GRAFICI = 0;
-function disegnaGrafico(box, punti, stile, conTooltip = true) {
+function disegnaGrafico(box, punti, stile, conTooltip2 = true) {
   box.empty();
   box.addClass("arl-grafico");
   const NS = "http://www.w3.org/2000/svg";
@@ -1454,7 +1454,7 @@ function disegnaGrafico(box, punti, stile, conTooltip = true) {
   const marcatore = el("circle", { r: Math.max(4, stile.sp * 1.6), fill: stile.c1, stroke: "var(--background-primary)", "stroke-width": 2, class: "arl-gr-marc" }, svg);
   marcatore.setAttribute("visibility", "hidden");
   box.appendChild(svg);
-  if (conTooltip && n > 0) {
+  if (conTooltip2 && n > 0) {
     const tip = box.createDiv({ cls: "arl-gr-tip" });
     tip.addClass("arl-oculto");
     svg.addEventListener("mousemove", (ev) => {
@@ -5399,6 +5399,10 @@ var MainView = class extends import_obsidian.ItemView {
     v.avvia();
   }
 };
+function conTooltip(sl) {
+  if (!("getSettingDefinitions" in import_obsidian.PluginSettingTab.prototype)) sl.setDynamicTooltip();
+  return sl;
+}
 var ARLSettingTab = class extends import_obsidian.PluginSettingTab {
   constructor(app, plugin) {
     super(app, plugin);
@@ -5426,596 +5430,693 @@ var ARLSettingTab = class extends import_obsidian.PluginSettingTab {
     return null;
   }
   disegna() {
-    var _a;
     const { containerEl } = this;
-    const s = this.plugin.settings;
     containerEl.empty();
     collegaTraduzione(containerEl);
-    new import_obsidian.Setting(containerEl).setName("Lingua dell'interfaccia").setDesc("Lingua dei menu e dei messaggi del plugin. Non modifica i tuoi set n\xE9 le note gi\xE0 scritte.").addDropdown(
-      (d) => d.addOptions({ it: "Italiano", en: "English" }).setValue(s.lingua).onChange(async (v) => {
-        s.lingua = v === "en" ? "en" : "it";
-        impostaLingua(s.lingua);
-        await this.plugin.salvaImpostazioni();
-        await this.plugin.scriviSetPredefiniti(false);
-        await this.plugin.caricaSet();
-      })
-    );
-    new import_obsidian.Setting(containerEl).setName("Cartella di salvataggio").setDesc("Le nuove recensioni vengono create qui come note.").addText(
-      (t) => t.setPlaceholder("Libri/ARL").setValue(s.cartella).onChange(async (v) => {
-        s.cartella = v.trim();
-        await this.plugin.salvaImpostazioni();
-      })
-    );
-    new import_obsidian.Setting(containerEl).setName("Cartella dei set di valutazione").setDesc("Qui si trovano le note dei set di valutazione: \xABRecensione Romanzi\xBB, \xABRecensione Saggi\xBB e i tuoi.").addText(
-      (t) => t.setPlaceholder("Libri/ARL/Set").setValue(s.cartellaSet).onChange(async (v) => {
-        s.cartellaSet = v.trim() || DEFAULTS.cartellaSet;
-        await this.plugin.salvaImpostazioni();
-        await this.plugin.caricaSet();
-      })
-    );
-    new import_obsidian.Setting(containerEl).setName("Cartella delle copertine").setDesc("Qui vengono copiate le copertine che carichi dal computer.").addText(
-      (t) => t.setPlaceholder("Libri/ARL/Copertine").setValue(s.cartellaCopertine).onChange(async (v) => {
-        s.cartellaCopertine = v.trim() || DEFAULTS.cartellaCopertine;
-        await this.plugin.salvaImpostazioni();
-      })
-    );
-    new import_obsidian.Setting(containerEl).setName("Domande per schermata").setDesc("Ogni tema viene diviso in schermate di questa dimensione.").addDropdown(
-      (d) => d.addOptions({ "1": "1", "2": "2", "5": "5", "10": "10" }).setValue(String(s.domandePerSchermata)).onChange(async (v) => {
-        s.domandePerSchermata = parseInt(v, 10);
-        await this.plugin.salvaImpostazioni();
-      })
-    );
-    new import_obsidian.Setting(containerEl).setName("ARL e stelle in tempo reale").setDesc("Durante la valutazione mostra in alto a destra il punteggio ARL e le stelle, che si aggiornano a ogni risposta.").addToggle(
-      (t) => t.setValue(s.arlLive).onChange(async (v) => {
-        s.arlLive = v;
-        await this.plugin.salvaImpostazioni();
-      })
-    );
-    new import_obsidian.Setting(containerEl).setName("Evidenzia la domanda").setDesc("Durante la valutazione una barra colorata mette in risalto la domanda corrente.").addToggle(
-      (t) => t.setValue(s.evidenziaDomanda).onChange(async (v) => {
-        s.evidenziaDomanda = v;
-        await this.plugin.salvaImpostazioni();
-        this.display();
-      })
-    );
-    if (s.evidenziaDomanda) {
-      const anteprima = containerEl.createDiv({ cls: "arl-ev-anteprima", text: "2. La trama \xE8 originale?" });
-      const avviso = containerEl.createDiv({ cls: "arl-meta arl-ev-avviso" });
-      const aggAnteprima = () => {
-        anteprima.style.background = s.evidenziaSfondo;
-        anteprima.style.color = s.evidenziaTesto;
-        avviso.setText(
-          contrasto(s.evidenziaSfondo, s.evidenziaTesto) < 3 ? "Attenzione: i due colori sono troppo simili, il testo potrebbe essere poco leggibile." : ""
-        );
-        this.plugin.applicaLarghezza();
-      };
-      const colore = (nome, desc, chiave) => new import_obsidian.Setting(containerEl).setName(nome).setDesc(desc).addColorPicker(
-        (cp) => cp.setValue(s[chiave]).onChange(async (v) => {
-          s[chiave] = v;
-          await this.plugin.salvaImpostazioni();
-          aggAnteprima();
-        })
-      ).addExtraButton(
-        (b) => b.setIcon("reset").setTooltip("Ripristina il colore predefinito").onClick(async () => {
-          s[chiave] = DEFAULTS[chiave];
-          await this.plugin.salvaImpostazioni();
-          this.plugin.applicaLarghezza();
-          this.display();
-        })
-      );
-      colore("Colore dello sfondo della domanda evidenziata", "Predefinito: verde.", "evidenziaSfondo");
-      colore("Colore del testo della domanda evidenziata", "Predefinito: bianco.", "evidenziaTesto");
-      aggAnteprima();
+    for (const sez of this.sezioni()) sez.disegna(containerEl, () => this.display());
+  }
+  /**
+   * Obsidian 1.13+: le opzioni compaiono nella ricerca delle impostazioni, una pagina per sezione.
+   * Il contenuto di ogni pagina è lo stesso di display(), che resta per le versioni precedenti.
+   */
+  getSettingDefinitions() {
+    return this.sezioni().map((sez) => ({
+      type: "page",
+      name: tr(sez.nome),
+      page: () => this.creaPagina(sez.nome, sez.disegna)
+    }));
+  }
+  /** La classe di base esiste solo dalla 1.13: si definisce al momento dell'uso, non al caricamento. */
+  creaPagina(nome, disegna) {
+    class PaginaOpzioni extends import_obsidian.SettingPage {
+      display() {
+        this.title = tr(nome);
+        this.containerEl.empty();
+        collegaTraduzione(this.containerEl);
+        disegna(this.containerEl, () => this.display());
+      }
+      hide() {
+        scollegaTraduzione(this.containerEl);
+        super.hide();
+      }
     }
-    new import_obsidian.Setting(containerEl).setName("Apri a schermo pieno").setDesc("Quando apri il plugin nasconde le barre laterali di Obsidian; quando esci (chiudi la scheda o passi a un'altra) tornano com'erano prima.").addToggle(
-      (t) => t.setValue(s.schermoPieno).onChange(async (v) => {
-        s.schermoPieno = v;
-        await this.plugin.salvaImpostazioni();
-        if (!v) this.plugin.ripristinaBarre();
-      })
-    );
-    new import_obsidian.Setting(containerEl).setName("Larghezza dell'interfaccia").setDesc("Larghezza massima del contenuto in pixel (da 600 a 2400). Se la imposti a 0 usa tutta la finestra.").addSlider(
-      (sl) => sl.setLimits(600, 2400, 50).setValue(s.larghezza > 0 ? s.larghezza : 2400).setDynamicTooltip().onChange(async (v) => {
-        s.larghezza = v;
-        await this.plugin.salvaImpostazioni();
-        this.plugin.applicaLarghezza();
-      })
-    ).addToggle(
-      (t) => t.setTooltip("Usa tutta la larghezza").setValue(s.larghezza === 0).onChange(async (v) => {
-        s.larghezza = v ? 0 : 1200;
-        await this.plugin.salvaImpostazioni();
-        this.plugin.applicaLarghezza();
-        this.display();
-      })
-    );
-    new import_obsidian.Setting(containerEl).setName("Barra dei totali della lista").setHeading();
-    const VOCI_RIEPILOGO = [
-      ["totali", "Numero di libri e totale in euro", "Quanti libri sono mostrati e la somma dei prezzi."],
-      ["stelle", "Libri per numero di stelle", "Quanti libri hanno 5, 4, 3\u2026 stelle, pi\xF9 quelli ancora da valutare."],
-      ["piu", "Libro con pi\xF9 pagine", "Il libro pi\xF9 lungo tra quelli mostrati."],
-      ["meno", "Libro con meno pagine", "Il libro pi\xF9 corto tra quelli mostrati."],
-      ["generi", "Generi letti", "I primi 5 generi per numero di libri letti."]
-    ];
-    for (const [chiave, nome, desc] of VOCI_RIEPILOGO) {
-      new import_obsidian.Setting(containerEl).setName(nome).setDesc(desc).addToggle(
-        (t) => t.setValue(!s.riepilogoNascosti.includes(chiave)).onChange(async (v) => {
-          s.riepilogoNascosti = s.riepilogoNascosti.filter((x) => x !== chiave);
-          if (!v) s.riepilogoNascosti.push(chiave);
-          await this.plugin.salvaImpostazioni();
-        })
-      );
-    }
-    new import_obsidian.Setting(containerEl).setName("Colonne della lista").setHeading();
-    containerEl.createDiv({
-      cls: "setting-item-description",
-      text: "Scegli quali colonne mostrare e in che ordine: trascina \u22EE\u22EE per spostare. Titolo e Autore sono sempre visibili. Vale per Libreria e Valuta libro."
-    });
-    const boxColonne = containerEl.createDiv({ cls: "arl-colonne" });
-    const disegnaColonne = () => {
-      boxColonne.empty();
-      let da = -1;
-      const pulisci = () => boxColonne.querySelectorAll(".arl-col-sopra, .arl-col-sotto, .arl-col-trascinata").forEach(
-        (e) => e.classList.remove("arl-col-sopra", "arl-col-sotto", "arl-col-trascinata")
-      );
-      s.colonneOrdine.forEach((k, i) => {
-        const col = COLONNE.find((c) => c.chiave === k);
-        if (!col) return;
-        const obbligatoria = COLONNE_OBBLIGATORIE.includes(k);
-        const visibile = obbligatoria || !s.colonneNascoste.includes(k);
-        const riga = boxColonne.createDiv({ cls: "arl-col-riga" });
-        riga.draggable = true;
-        riga.createSpan({ cls: "arl-col-maniglia", text: "\u22EE\u22EE" });
-        const sw = riga.createDiv({
-          cls: "checkbox-container" + (visibile ? " is-enabled" : "") + (obbligatoria ? " arl-col-bloccata" : "")
-        });
-        sw.createEl("input", { type: "checkbox" });
-        if (!obbligatoria) {
-          sw.onclick = async () => {
-            const nascoste = new Set(s.colonneNascoste);
-            if (nascoste.has(k)) nascoste.delete(k);
-            else nascoste.add(k);
-            s.colonneNascoste = [...nascoste];
-            await this.plugin.salvaImpostazioni();
-            disegnaColonne();
-          };
-        }
-        riga.createSpan({ cls: "arl-col-nome", text: col.titolo });
-        if (obbligatoria) riga.createSpan({ cls: "arl-col-nota", text: "sempre visibile" });
-        riga.addEventListener("dragstart", (ev) => {
-          var _a2;
-          da = i;
-          (_a2 = ev.dataTransfer) == null ? void 0 : _a2.setData("text/plain", String(i));
-          if (ev.dataTransfer) ev.dataTransfer.effectAllowed = "move";
-          riga.classList.add("arl-col-trascinata");
-        });
-        riga.addEventListener("dragend", pulisci);
-        riga.addEventListener("dragover", (ev) => {
-          if (da < 0) return;
-          ev.preventDefault();
-          const r = riga.getBoundingClientRect();
-          const sotto = ev.clientY > r.top + r.height / 2;
-          boxColonne.querySelectorAll(".arl-col-sopra, .arl-col-sotto").forEach(
-            (e) => e.classList.remove("arl-col-sopra", "arl-col-sotto")
+    return new PaginaOpzioni();
+  }
+  sezioni() {
+    return [
+      {
+        nome: "Generale",
+        disegna: (containerEl, rinnova) => {
+          const s = this.plugin.settings;
+          new import_obsidian.Setting(containerEl).setName("Lingua dell'interfaccia").setDesc("Lingua dei menu e dei messaggi del plugin. Non modifica i tuoi set n\xE9 le note gi\xE0 scritte.").addDropdown(
+            (d) => d.addOptions({ it: "Italiano", en: "English" }).setValue(s.lingua).onChange(async (v) => {
+              s.lingua = v === "en" ? "en" : "it";
+              impostaLingua(s.lingua);
+              await this.plugin.salvaImpostazioni();
+              await this.plugin.scriviSetPredefiniti(false);
+              await this.plugin.caricaSet();
+            })
           );
-          riga.classList.add(sotto ? "arl-col-sotto" : "arl-col-sopra");
-        });
-        riga.addEventListener("drop", (ev) => {
-          void (async () => {
-            if (da < 0) return;
-            ev.preventDefault();
-            const r = riga.getBoundingClientRect();
-            let a = i + (ev.clientY > r.top + r.height / 2 ? 1 : 0);
-            const ordine = [...s.colonneOrdine];
-            const [spostata] = ordine.splice(da, 1);
-            if (da < a) a--;
-            ordine.splice(a, 0, spostata);
-            s.colonneOrdine = ordine;
-            da = -1;
-            await this.plugin.salvaImpostazioni();
-            disegnaColonne();
-          })();
-        });
-      });
-    };
-    disegnaColonne();
-    new import_obsidian.Setting(containerEl).addButton(
-      (b) => b.setButtonText("Ripristina colonne predefinite").onClick(async () => {
-        s.colonneOrdine = [...DEFAULTS.colonneOrdine];
-        s.colonneNascoste = [];
-        await this.plugin.salvaImpostazioni();
-        disegnaColonne();
-      })
-    );
-    new import_obsidian.Setting(containerEl).setName("Testo").setHeading();
-    const FONT = [
-      ["", "Predefinito del tema"],
-      ["system-ui, -apple-system, 'Segoe UI', sans-serif", "Sans-serif (sistema)"],
-      ["Georgia, 'Times New Roman', serif", "Serif (Georgia)"],
-      ["'Times New Roman', Times, serif", "Times New Roman"],
-      ["Arial, Helvetica, sans-serif", "Arial"],
-      ["Verdana, Geneva, sans-serif", "Verdana"],
-      ["'Trebuchet MS', sans-serif", "Trebuchet MS"],
-      ["'Courier New', monospace", "Courier New"],
-      ["ui-monospace, Consolas, monospace", "Monospace"],
-      ["__altro", "Personalizzato\u2026"]
-    ];
-    const predefinito = FONT.some(([v]) => v === s.fontFamiglia);
-    const personalizzato = (_a = this.fontAltro) != null ? _a : !predefinito;
-    new import_obsidian.Setting(containerEl).setName("Font").setDesc("Carattere dei testi del plugin.").addDropdown((d) => {
-      for (const [v, n] of FONT) d.addOption(v, n);
-      d.setValue(personalizzato ? "__altro" : s.fontFamiglia).onChange(async (v) => {
-        if (v === "__altro") {
-          this.fontAltro = true;
-          this.display();
-          return;
+          new import_obsidian.Setting(containerEl).setName("Cartella di salvataggio").setDesc("Le nuove recensioni vengono create qui come note.").addText(
+            (t) => t.setPlaceholder("Libri/ARL").setValue(s.cartella).onChange(async (v) => {
+              s.cartella = v.trim();
+              await this.plugin.salvaImpostazioni();
+            })
+          );
+          new import_obsidian.Setting(containerEl).setName("Cartella dei set di valutazione").setDesc("Qui si trovano le note dei set di valutazione: \xABRecensione Romanzi\xBB, \xABRecensione Saggi\xBB e i tuoi.").addText(
+            (t) => t.setPlaceholder("Libri/ARL/Set").setValue(s.cartellaSet).onChange(async (v) => {
+              s.cartellaSet = v.trim() || DEFAULTS.cartellaSet;
+              await this.plugin.salvaImpostazioni();
+              await this.plugin.caricaSet();
+            })
+          );
+          new import_obsidian.Setting(containerEl).setName("Cartella delle copertine").setDesc("Qui vengono copiate le copertine che carichi dal computer.").addText(
+            (t) => t.setPlaceholder("Libri/ARL/Copertine").setValue(s.cartellaCopertine).onChange(async (v) => {
+              s.cartellaCopertine = v.trim() || DEFAULTS.cartellaCopertine;
+              await this.plugin.salvaImpostazioni();
+            })
+          );
+          new import_obsidian.Setting(containerEl).setName("Domande per schermata").setDesc("Ogni tema viene diviso in schermate di questa dimensione.").addDropdown(
+            (d) => d.addOptions({ "1": "1", "2": "2", "5": "5", "10": "10" }).setValue(String(s.domandePerSchermata)).onChange(async (v) => {
+              s.domandePerSchermata = parseInt(v, 10);
+              await this.plugin.salvaImpostazioni();
+            })
+          );
+          new import_obsidian.Setting(containerEl).setName("ARL e stelle in tempo reale").setDesc("Durante la valutazione mostra in alto a destra il punteggio ARL e le stelle, che si aggiornano a ogni risposta.").addToggle(
+            (t) => t.setValue(s.arlLive).onChange(async (v) => {
+              s.arlLive = v;
+              await this.plugin.salvaImpostazioni();
+            })
+          );
+          new import_obsidian.Setting(containerEl).setName("Evidenzia la domanda").setDesc("Durante la valutazione una barra colorata mette in risalto la domanda corrente.").addToggle(
+            (t) => t.setValue(s.evidenziaDomanda).onChange(async (v) => {
+              s.evidenziaDomanda = v;
+              await this.plugin.salvaImpostazioni();
+              rinnova();
+            })
+          );
+          if (s.evidenziaDomanda) {
+            const anteprima = containerEl.createDiv({ cls: "arl-ev-anteprima", text: "2. La trama \xE8 originale?" });
+            const avviso = containerEl.createDiv({ cls: "arl-meta arl-ev-avviso" });
+            const aggAnteprima = () => {
+              anteprima.style.background = s.evidenziaSfondo;
+              anteprima.style.color = s.evidenziaTesto;
+              avviso.setText(
+                contrasto(s.evidenziaSfondo, s.evidenziaTesto) < 3 ? "Attenzione: i due colori sono troppo simili, il testo potrebbe essere poco leggibile." : ""
+              );
+              this.plugin.applicaLarghezza();
+            };
+            const colore = (nome, desc, chiave) => new import_obsidian.Setting(containerEl).setName(nome).setDesc(desc).addColorPicker(
+              (cp) => cp.setValue(s[chiave]).onChange(async (v) => {
+                s[chiave] = v;
+                await this.plugin.salvaImpostazioni();
+                aggAnteprima();
+              })
+            ).addExtraButton(
+              (b) => b.setIcon("reset").setTooltip("Ripristina il colore predefinito").onClick(async () => {
+                s[chiave] = DEFAULTS[chiave];
+                await this.plugin.salvaImpostazioni();
+                this.plugin.applicaLarghezza();
+                rinnova();
+              })
+            );
+            colore("Colore dello sfondo della domanda evidenziata", "Predefinito: verde.", "evidenziaSfondo");
+            colore("Colore del testo della domanda evidenziata", "Predefinito: bianco.", "evidenziaTesto");
+            aggAnteprima();
+          }
+          new import_obsidian.Setting(containerEl).setName("Apri a schermo pieno").setDesc("Quando apri il plugin nasconde le barre laterali di Obsidian; quando esci (chiudi la scheda o passi a un'altra) tornano com'erano prima.").addToggle(
+            (t) => t.setValue(s.schermoPieno).onChange(async (v) => {
+              s.schermoPieno = v;
+              await this.plugin.salvaImpostazioni();
+              if (!v) this.plugin.ripristinaBarre();
+            })
+          );
+          new import_obsidian.Setting(containerEl).setName("Larghezza dell'interfaccia").setDesc("Larghezza massima del contenuto in pixel (da 600 a 2400). Se la imposti a 0 usa tutta la finestra.").addSlider(
+            (sl) => conTooltip(sl).setLimits(600, 2400, 50).setValue(s.larghezza > 0 ? s.larghezza : 2400).onChange(async (v) => {
+              s.larghezza = v;
+              await this.plugin.salvaImpostazioni();
+              this.plugin.applicaLarghezza();
+            })
+          ).addToggle(
+            (t) => t.setTooltip("Usa tutta la larghezza").setValue(s.larghezza === 0).onChange(async (v) => {
+              s.larghezza = v ? 0 : 1200;
+              await this.plugin.salvaImpostazioni();
+              this.plugin.applicaLarghezza();
+              rinnova();
+            })
+          );
         }
-        this.fontAltro = false;
-        s.fontFamiglia = v;
-        await this.plugin.salvaImpostazioni();
-        this.plugin.applicaLarghezza();
-        this.display();
-      });
-    });
-    if (personalizzato) {
-      new import_obsidian.Setting(containerEl).setName("Nome del font").setDesc("Per esempio: Palatino Linotype, Calibri. Deve essere installato sul tuo computer.").addText(
-        (t) => t.setPlaceholder("Calibri").setValue(s.fontFamiglia).onChange(async (v) => {
-          s.fontFamiglia = v.trim();
-          await this.plugin.salvaImpostazioni();
-          this.plugin.applicaLarghezza();
-        })
-      );
-    }
-    new import_obsidian.Setting(containerEl).setName("Dimensione del testo").setDesc("In pixel (da 10 a 32). Il pulsante a destra torna alla dimensione del tema.").addSlider(
-      (sl) => sl.setLimits(10, 32, 1).setValue(s.fontDimensione || 16).setDynamicTooltip().onChange(async (v) => {
-        s.fontDimensione = v;
-        await this.plugin.salvaImpostazioni();
-        this.plugin.applicaLarghezza();
-      })
-    ).addExtraButton(
-      (b) => b.setIcon("reset").setTooltip("Usa la dimensione del tema").onClick(async () => {
-        s.fontDimensione = 0;
-        await this.plugin.salvaImpostazioni();
-        this.plugin.applicaLarghezza();
-        this.display();
-      })
-    );
-    new import_obsidian.Setting(containerEl).setName("Colore del testo").setDesc("Colore principale dei testi. I testi secondari (grigi) restano quelli del tema.").addColorPicker(
-      (cp) => cp.setValue(s.coloreTesto || "#808080").onChange(async (v) => {
-        s.coloreTesto = v;
-        await this.plugin.salvaImpostazioni();
-        this.plugin.applicaLarghezza();
-      })
-    ).addExtraButton(
-      (b) => b.setIcon("reset").setTooltip("Usa il colore del tema").onClick(async () => {
-        s.coloreTesto = "";
-        await this.plugin.salvaImpostazioni();
-        this.plugin.applicaLarghezza();
-        this.display();
-      })
-    );
-    new import_obsidian.Setting(containerEl).setName("Libreria virtuale").setHeading();
-    new import_obsidian.Setting(containerEl).setName("Libri per ripiano").setDesc("Quanti libri stanno su ogni ripiano (da 5 a 40). Cambiandolo, i libri si ridistribuiscono nell'ordine salvato.").addSlider(
-      (sl) => sl.setLimits(5, 40, 1).setValue(s.vlPerRipiano).setDynamicTooltip().onChange(async (v) => {
-        s.vlPerRipiano = v;
-        await this.plugin.salvaImpostazioni();
-      })
-    );
-    new import_obsidian.Setting(containerEl).setName("Usa tutta la larghezza").setDesc("La libreria occupa tutta la larghezza della finestra, ignorando la larghezza scelta qui sotto.").addToggle(
-      (t) => t.setValue(s.vlAdatta).onChange(async (v) => {
-        s.vlAdatta = v;
-        await this.plugin.salvaImpostazioni();
-        this.display();
-      })
-    );
-    if (!s.vlAdatta) {
-      new import_obsidian.Setting(containerEl).setName("Larghezza della libreria").setDesc("In pixel (da 500 a 2400).").addSlider(
-        (sl) => sl.setLimits(500, 2400, 50).setValue(s.vlLarghezza).setDynamicTooltip().onChange(async (v) => {
-          s.vlLarghezza = v;
-          await this.plugin.salvaImpostazioni();
-        })
-      );
-    }
-    new import_obsidian.Setting(containerEl).setName("Testo sul dorso").setDesc("Cosa si legge sul dorso di ogni libro. Il carattere si riduce da solo per far stare tutto il testo.").addDropdown(
-      (d) => d.addOptions({ titoloAutore: "Titolo e autore", titolo: "Solo titolo" }).setValue(s.vlMostra).onChange(async (v) => {
-        s.vlMostra = v === "titolo" ? "titolo" : "titoloAutore";
-        await this.plugin.salvaImpostazioni();
-      })
-    );
-    {
-      const f = s.vlImmagine ? this.plugin.app.vault.getAbstractFileByPath(s.vlImmagine) : null;
-      const esiste = f instanceof import_obsidian.TFile;
-      const imp = new import_obsidian.Setting(containerEl).setName("Immagine dietro la libreria").setDesc(
-        s.vlImmagine ? esiste ? `${s.vlImmagine} \u2014 meglio sotto i 2000 px di larghezza.` : `Immagine non trovata nel vault: ${s.vlImmagine}` : "Nessuna. Una parete o una stanza dietro lo scaffale (meglio sotto i 2000 px di larghezza)."
-      );
-      const scelta = async (file) => {
-        s.vlImmagine = file.path;
-        await this.plugin.salvaImpostazioni();
-        this.display();
-      };
-      imp.addButton(
-        (b) => b.setButtonText("Scegli\u2026").onClick(() => {
-          const imm = this.plugin.imgDelVault();
-          if (!imm.length) {
-            new NoticeT("Nel vault non ci sono immagini.");
-            return;
+      },
+      {
+        nome: "Barra dei totali della lista",
+        disegna: (containerEl, rinnova) => {
+          const s = this.plugin.settings;
+          new import_obsidian.Setting(containerEl).setName("Barra dei totali della lista").setHeading();
+          const VOCI_RIEPILOGO = [
+            ["totali", "Numero di libri e totale in euro", "Quanti libri sono mostrati e la somma dei prezzi."],
+            ["stelle", "Libri per numero di stelle", "Quanti libri hanno 5, 4, 3\u2026 stelle, pi\xF9 quelli ancora da valutare."],
+            ["piu", "Libro con pi\xF9 pagine", "Il libro pi\xF9 lungo tra quelli mostrati."],
+            ["meno", "Libro con meno pagine", "Il libro pi\xF9 corto tra quelli mostrati."],
+            ["generi", "Generi letti", "I primi 5 generi per numero di libri letti."]
+          ];
+          for (const [chiave, nome, desc] of VOCI_RIEPILOGO) {
+            new import_obsidian.Setting(containerEl).setName(nome).setDesc(desc).addToggle(
+              (t) => t.setValue(!s.riepilogoNascosti.includes(chiave)).onChange(async (v) => {
+                s.riepilogoNascosti = s.riepilogoNascosti.filter((x) => x !== chiave);
+                if (!v) s.riepilogoNascosti.push(chiave);
+                await this.plugin.salvaImpostazioni();
+              })
+            );
           }
-          new ImmagineModal(this.plugin.app, imm, (x) => void scelta(x)).open();
-        })
-      );
-      imp.addButton(
-        (b) => b.setButtonText("Dal computer\u2026").onClick(() => {
-          const sel = createEl("input");
-          sel.type = "file";
-          sel.accept = "image/*";
-          sel.onchange = async () => {
-            var _a2;
-            const file = (_a2 = sel.files) == null ? void 0 : _a2[0];
-            if (!file) return;
-            try {
-              await scelta(await this.plugin.importaImmagine(file));
-            } catch (e) {
-              new NoticeT(`Impossibile aggiungere l'immagine: ${e.message}`);
-            }
+        }
+      },
+      {
+        nome: "Colonne della lista",
+        disegna: (containerEl, rinnova) => {
+          const s = this.plugin.settings;
+          new import_obsidian.Setting(containerEl).setName("Colonne della lista").setHeading();
+          containerEl.createDiv({
+            cls: "setting-item-description",
+            text: "Scegli quali colonne mostrare e in che ordine: trascina \u22EE\u22EE per spostare. Titolo e Autore sono sempre visibili. Vale per Libreria e Valuta libro."
+          });
+          const boxColonne = containerEl.createDiv({ cls: "arl-colonne" });
+          const disegnaColonne = () => {
+            boxColonne.empty();
+            let da = -1;
+            const pulisci = () => boxColonne.querySelectorAll(".arl-col-sopra, .arl-col-sotto, .arl-col-trascinata").forEach(
+              (e) => e.classList.remove("arl-col-sopra", "arl-col-sotto", "arl-col-trascinata")
+            );
+            s.colonneOrdine.forEach((k, i) => {
+              const col = COLONNE.find((c) => c.chiave === k);
+              if (!col) return;
+              const obbligatoria = COLONNE_OBBLIGATORIE.includes(k);
+              const visibile = obbligatoria || !s.colonneNascoste.includes(k);
+              const riga = boxColonne.createDiv({ cls: "arl-col-riga" });
+              riga.draggable = true;
+              riga.createSpan({ cls: "arl-col-maniglia", text: "\u22EE\u22EE" });
+              const sw = riga.createDiv({
+                cls: "checkbox-container" + (visibile ? " is-enabled" : "") + (obbligatoria ? " arl-col-bloccata" : "")
+              });
+              sw.createEl("input", { type: "checkbox" });
+              if (!obbligatoria) {
+                sw.onclick = async () => {
+                  const nascoste = new Set(s.colonneNascoste);
+                  if (nascoste.has(k)) nascoste.delete(k);
+                  else nascoste.add(k);
+                  s.colonneNascoste = [...nascoste];
+                  await this.plugin.salvaImpostazioni();
+                  disegnaColonne();
+                };
+              }
+              riga.createSpan({ cls: "arl-col-nome", text: col.titolo });
+              if (obbligatoria) riga.createSpan({ cls: "arl-col-nota", text: "sempre visibile" });
+              riga.addEventListener("dragstart", (ev) => {
+                var _a;
+                da = i;
+                (_a = ev.dataTransfer) == null ? void 0 : _a.setData("text/plain", String(i));
+                if (ev.dataTransfer) ev.dataTransfer.effectAllowed = "move";
+                riga.classList.add("arl-col-trascinata");
+              });
+              riga.addEventListener("dragend", pulisci);
+              riga.addEventListener("dragover", (ev) => {
+                if (da < 0) return;
+                ev.preventDefault();
+                const r = riga.getBoundingClientRect();
+                const sotto = ev.clientY > r.top + r.height / 2;
+                boxColonne.querySelectorAll(".arl-col-sopra, .arl-col-sotto").forEach(
+                  (e) => e.classList.remove("arl-col-sopra", "arl-col-sotto")
+                );
+                riga.classList.add(sotto ? "arl-col-sotto" : "arl-col-sopra");
+              });
+              riga.addEventListener("drop", (ev) => {
+                void (async () => {
+                  if (da < 0) return;
+                  ev.preventDefault();
+                  const r = riga.getBoundingClientRect();
+                  let a = i + (ev.clientY > r.top + r.height / 2 ? 1 : 0);
+                  const ordine = [...s.colonneOrdine];
+                  const [spostata] = ordine.splice(da, 1);
+                  if (da < a) a--;
+                  ordine.splice(a, 0, spostata);
+                  s.colonneOrdine = ordine;
+                  da = -1;
+                  await this.plugin.salvaImpostazioni();
+                  disegnaColonne();
+                })();
+              });
+            });
           };
-          sel.click();
-        })
-      );
-      imp.addButton(
-        (b) => b.setButtonText("Nessuna").onClick(async () => {
-          s.vlImmagine = "";
-          await this.plugin.salvaImpostazioni();
-          this.display();
-        })
-      );
-      if (esiste) {
-        new import_obsidian.Setting(containerEl).setName("Adattamento dell'immagine").setDesc("Copri tutto riempie l'area (tagliando i bordi), Adatta mostra l'immagine intera, Ripeti la ripete come un tappeto.").addDropdown(
-          (d) => d.addOptions({ cover: "Copri tutto", contain: "Adatta", repeat: "Ripeti" }).setValue(s.vlImgModo).onChange(async (v) => {
-            s.vlImgModo = v === "contain" || v === "repeat" ? v : "cover";
-            await this.plugin.salvaImpostazioni();
-          })
-        );
-        new import_obsidian.Setting(containerEl).setName("Oscura l'immagine").setDesc("Velatura scura (da 0 a 70 %) per far risaltare i libri.").addSlider(
-          (sl) => sl.setLimits(0, 70, 5).setValue(s.vlImgOscura).setDynamicTooltip().onChange(async (v) => {
-            s.vlImgOscura = v;
-            await this.plugin.salvaImpostazioni();
-          })
-        );
-        new import_obsidian.Setting(containerEl).setName("Sfocatura").setDesc("Effetto fuori fuoco (da 0 a 20 px) per non distrarre dai libri.").addSlider(
-          (sl) => sl.setLimits(0, 20, 1).setValue(s.vlImgSfoca).setDynamicTooltip().onChange(async (v) => {
-            s.vlImgSfoca = v;
-            await this.plugin.salvaImpostazioni();
-          })
-        );
-      }
-    }
-    new import_obsidian.Setting(containerEl).setName("Sfondo della libreria").setDesc("Predefinito: legno. Scegliendo un colore, lo sfondo diventa una tinta unita.").addColorPicker(
-      (cp) => cp.setValue(s.vlSfondo || "#b58650").onChange(async (v) => {
-        s.vlSfondo = v;
-        await this.plugin.salvaImpostazioni();
-      })
-    ).addExtraButton(
-      (b) => b.setIcon("reset").setTooltip("Usa il legno").onClick(async () => {
-        s.vlSfondo = "";
-        await this.plugin.salvaImpostazioni();
-        this.display();
-      })
-    );
-    {
-      const generi = /* @__PURE__ */ new Map();
-      for (const l of this.plugin.tuttiILibri()) {
-        const g = l.genere.trim();
-        if (g && !generi.has(g.toLowerCase())) generi.set(g.toLowerCase(), g);
-      }
-      new import_obsidian.Setting(containerEl).setName("Colori per genere").setDesc("Colore del dorso dei libri di ogni genere. Senza una scelta, il genere ha una tinta automatica sempre uguale.");
-      for (const [chiave, nome] of [...generi].sort((p, q) => p[1].localeCompare(q[1], "it"))) {
-        new import_obsidian.Setting(containerEl).setName(nome).addColorPicker(
-          (cp) => cp.setValue(coloreGenere(s, nome)).onChange(async (v) => {
-            s.vlGeneri[chiave] = v;
-            await this.plugin.salvaImpostazioni();
-          })
-        ).addExtraButton(
-          (b) => b.setIcon("reset").setTooltip("Usa la tinta automatica").onClick(async () => {
-            delete s.vlGeneri[chiave];
-            await this.plugin.salvaImpostazioni();
-            this.display();
-          })
-        );
-      }
-    }
-    {
-      let conferma = false;
-      new import_obsidian.Setting(containerEl).setName("Ordine dei libri").setDesc("Cancella le posizioni scelte trascinando e riporta i libri in ordine di codice, dal pi\xF9 alto al pi\xF9 basso.").addButton(
-        (b) => b.setButtonText("Ripristina l'ordine per codice").onClick(async () => {
-          if (!conferma) {
-            conferma = true;
-            b.setButtonText("Premi ancora per confermare");
-            window.setTimeout(() => {
-              conferma = false;
-              b.setButtonText("Ripristina l'ordine per codice");
-            }, 4e3);
-            return;
+          disegnaColonne();
+          new import_obsidian.Setting(containerEl).addButton(
+            (b) => b.setButtonText("Ripristina colonne predefinite").onClick(async () => {
+              s.colonneOrdine = [...DEFAULTS.colonneOrdine];
+              s.colonneNascoste = [];
+              await this.plugin.salvaImpostazioni();
+              disegnaColonne();
+            })
+          );
+        }
+      },
+      {
+        nome: "Testo",
+        disegna: (containerEl, rinnova) => {
+          var _a;
+          const s = this.plugin.settings;
+          new import_obsidian.Setting(containerEl).setName("Testo").setHeading();
+          const FONT = [
+            ["", "Predefinito del tema"],
+            ["system-ui, -apple-system, 'Segoe UI', sans-serif", "Sans-serif (sistema)"],
+            ["Georgia, 'Times New Roman', serif", "Serif (Georgia)"],
+            ["'Times New Roman', Times, serif", "Times New Roman"],
+            ["Arial, Helvetica, sans-serif", "Arial"],
+            ["Verdana, Geneva, sans-serif", "Verdana"],
+            ["'Trebuchet MS', sans-serif", "Trebuchet MS"],
+            ["'Courier New', monospace", "Courier New"],
+            ["ui-monospace, Consolas, monospace", "Monospace"],
+            ["__altro", "Personalizzato\u2026"]
+          ];
+          const predefinito = FONT.some(([v]) => v === s.fontFamiglia);
+          const personalizzato = (_a = this.fontAltro) != null ? _a : !predefinito;
+          new import_obsidian.Setting(containerEl).setName("Font").setDesc("Carattere dei testi del plugin.").addDropdown((d) => {
+            for (const [v, n] of FONT) d.addOption(v, n);
+            d.setValue(personalizzato ? "__altro" : s.fontFamiglia).onChange(async (v) => {
+              if (v === "__altro") {
+                this.fontAltro = true;
+                rinnova();
+                return;
+              }
+              this.fontAltro = false;
+              s.fontFamiglia = v;
+              await this.plugin.salvaImpostazioni();
+              this.plugin.applicaLarghezza();
+              rinnova();
+            });
+          });
+          if (personalizzato) {
+            new import_obsidian.Setting(containerEl).setName("Nome del font").setDesc("Per esempio: Palatino Linotype, Calibri. Deve essere installato sul tuo computer.").addText(
+              (t) => t.setPlaceholder("Calibri").setValue(s.fontFamiglia).onChange(async (v) => {
+                s.fontFamiglia = v.trim();
+                await this.plugin.salvaImpostazioni();
+                this.plugin.applicaLarghezza();
+              })
+            );
           }
-          s.vlOrdine = [];
-          s.vlCriterio = "";
-          await this.plugin.salvaImpostazioni();
-          new NoticeT("Ordine ripristinato.");
-          conferma = false;
-          b.setButtonText("Ripristina l'ordine per codice");
-        })
-      );
-    }
-    new import_obsidian.Setting(containerEl).setName("Copertina").setHeading();
-    new import_obsidian.Setting(containerEl).setName("Altezza della copertina").setDesc("Altezza massima dell'immagine nel dettaglio del libro, in pixel (da 80 a 600). Il pulsante a destra riporta il valore predefinito (240).").addSlider(
-      (sl) => sl.setLimits(80, 600, 10).setValue(s.altezzaCopertina).setDynamicTooltip().onChange(async (v) => {
-        s.altezzaCopertina = v;
-        await this.plugin.salvaImpostazioni();
-        this.plugin.applicaLarghezza();
-      })
-    ).addExtraButton(
-      (b) => b.setIcon("reset").setTooltip("Ripristina la dimensione predefinita").onClick(async () => {
-        s.altezzaCopertina = DEFAULTS.altezzaCopertina;
-        await this.plugin.salvaImpostazioni();
-        this.plugin.applicaLarghezza();
-        this.display();
-      })
-    );
-    new import_obsidian.Setting(containerEl).setName("Galleria immagini").setHeading();
-    new import_obsidian.Setting(containerEl).setName("Dimensione delle anteprime").setDesc("Larghezza in pixel delle anteprime nella galleria immagini (da 120 a 600). Il pulsante a destra riporta il valore predefinito (260).").addSlider(
-      (sl) => sl.setLimits(120, 600, 10).setValue(s.galleriaMiniatura).setDynamicTooltip().onChange(async (v) => {
-        s.galleriaMiniatura = v;
-        await this.plugin.salvaImpostazioni();
-        this.plugin.applicaLarghezza();
-      })
-    ).addExtraButton(
-      (b) => b.setIcon("rotate-ccw").setTooltip("Ripristina la dimensione predefinita").onClick(async () => {
-        s.galleriaMiniatura = DEFAULTS.galleriaMiniatura;
-        await this.plugin.salvaImpostazioni();
-        this.plugin.applicaLarghezza();
-        this.display();
-      })
-    );
-    new import_obsidian.Setting(containerEl).setName("Barra di lettura").setHeading();
-    new import_obsidian.Setting(containerEl).setName("Spessore della barra").setDesc("Altezza in pixel della barra di avanzamento nella sezione Lettura del dettaglio libro.").addSlider(
-      (sl) => sl.setLimits(6, 40, 1).setValue(s.spessoreBarra).setDynamicTooltip().onChange(async (v) => {
-        s.spessoreBarra = v;
-        await this.plugin.salvaImpostazioni();
-        this.plugin.applicaLarghezza();
-        aggiornaAnteprimaBarra();
-      })
-    );
-    new import_obsidian.Setting(containerEl).setName("Barra sfumata").setDesc("Se attiva, la barra passa da un colore di partenza a uno di arrivo.").addToggle(
-      (t) => t.setValue(s.barraSfumata).onChange(async (v) => {
-        s.barraSfumata = v;
-        await this.plugin.salvaImpostazioni();
-        this.plugin.applicaLarghezza();
-        this.display();
-      })
-    );
-    new import_obsidian.Setting(containerEl).setName(s.barraSfumata ? "Colore di partenza" : "Colore della barra").addColorPicker(
-      (cp) => cp.setValue(s.coloreBarra).onChange(async (v) => {
-        s.coloreBarra = v;
-        await this.plugin.salvaImpostazioni();
-        this.plugin.applicaLarghezza();
-        aggiornaAnteprimaBarra();
-      })
-    ).addExtraButton(
-      (b) => b.setIcon("reset").setTooltip("Ripristina il colore predefinito").onClick(async () => {
-        s.coloreBarra = DEFAULTS.coloreBarra;
-        await this.plugin.salvaImpostazioni();
-        this.plugin.applicaLarghezza();
-        this.display();
-      })
-    );
-    if (s.barraSfumata) {
-      new import_obsidian.Setting(containerEl).setName("Colore di arrivo").addColorPicker(
-        (cp) => cp.setValue(s.coloreBarraFine).onChange(async (v) => {
-          s.coloreBarraFine = v;
-          await this.plugin.salvaImpostazioni();
-          this.plugin.applicaLarghezza();
+          new import_obsidian.Setting(containerEl).setName("Dimensione del testo").setDesc("In pixel (da 10 a 32). Il pulsante a destra torna alla dimensione del tema.").addSlider(
+            (sl) => conTooltip(sl).setLimits(10, 32, 1).setValue(s.fontDimensione || 16).onChange(async (v) => {
+              s.fontDimensione = v;
+              await this.plugin.salvaImpostazioni();
+              this.plugin.applicaLarghezza();
+            })
+          ).addExtraButton(
+            (b) => b.setIcon("reset").setTooltip("Usa la dimensione del tema").onClick(async () => {
+              s.fontDimensione = 0;
+              await this.plugin.salvaImpostazioni();
+              this.plugin.applicaLarghezza();
+              rinnova();
+            })
+          );
+          new import_obsidian.Setting(containerEl).setName("Colore del testo").setDesc("Colore principale dei testi. I testi secondari (grigi) restano quelli del tema.").addColorPicker(
+            (cp) => cp.setValue(s.coloreTesto || "#808080").onChange(async (v) => {
+              s.coloreTesto = v;
+              await this.plugin.salvaImpostazioni();
+              this.plugin.applicaLarghezza();
+            })
+          ).addExtraButton(
+            (b) => b.setIcon("reset").setTooltip("Usa il colore del tema").onClick(async () => {
+              s.coloreTesto = "";
+              await this.plugin.salvaImpostazioni();
+              this.plugin.applicaLarghezza();
+              rinnova();
+            })
+          );
+        }
+      },
+      {
+        nome: "Libreria virtuale",
+        disegna: (containerEl, rinnova) => {
+          const s = this.plugin.settings;
+          new import_obsidian.Setting(containerEl).setName("Libreria virtuale").setHeading();
+          new import_obsidian.Setting(containerEl).setName("Libri per ripiano").setDesc("Quanti libri stanno su ogni ripiano (da 5 a 40). Cambiandolo, i libri si ridistribuiscono nell'ordine salvato.").addSlider(
+            (sl) => conTooltip(sl).setLimits(5, 40, 1).setValue(s.vlPerRipiano).onChange(async (v) => {
+              s.vlPerRipiano = v;
+              await this.plugin.salvaImpostazioni();
+            })
+          );
+          new import_obsidian.Setting(containerEl).setName("Usa tutta la larghezza").setDesc("La libreria occupa tutta la larghezza della finestra, ignorando la larghezza scelta qui sotto.").addToggle(
+            (t) => t.setValue(s.vlAdatta).onChange(async (v) => {
+              s.vlAdatta = v;
+              await this.plugin.salvaImpostazioni();
+              rinnova();
+            })
+          );
+          if (!s.vlAdatta) {
+            new import_obsidian.Setting(containerEl).setName("Larghezza della libreria").setDesc("In pixel (da 500 a 2400).").addSlider(
+              (sl) => conTooltip(sl).setLimits(500, 2400, 50).setValue(s.vlLarghezza).onChange(async (v) => {
+                s.vlLarghezza = v;
+                await this.plugin.salvaImpostazioni();
+              })
+            );
+          }
+          new import_obsidian.Setting(containerEl).setName("Testo sul dorso").setDesc("Cosa si legge sul dorso di ogni libro. Il carattere si riduce da solo per far stare tutto il testo.").addDropdown(
+            (d) => d.addOptions({ titoloAutore: "Titolo e autore", titolo: "Solo titolo" }).setValue(s.vlMostra).onChange(async (v) => {
+              s.vlMostra = v === "titolo" ? "titolo" : "titoloAutore";
+              await this.plugin.salvaImpostazioni();
+            })
+          );
+          {
+            const f = s.vlImmagine ? this.plugin.app.vault.getAbstractFileByPath(s.vlImmagine) : null;
+            const esiste = f instanceof import_obsidian.TFile;
+            const imp = new import_obsidian.Setting(containerEl).setName("Immagine dietro la libreria").setDesc(
+              s.vlImmagine ? esiste ? `${s.vlImmagine} \u2014 meglio sotto i 2000 px di larghezza.` : `Immagine non trovata nel vault: ${s.vlImmagine}` : "Nessuna. Una parete o una stanza dietro lo scaffale (meglio sotto i 2000 px di larghezza)."
+            );
+            const scelta = async (file) => {
+              s.vlImmagine = file.path;
+              await this.plugin.salvaImpostazioni();
+              rinnova();
+            };
+            imp.addButton(
+              (b) => b.setButtonText("Scegli\u2026").onClick(() => {
+                const imm = this.plugin.imgDelVault();
+                if (!imm.length) {
+                  new NoticeT("Nel vault non ci sono immagini.");
+                  return;
+                }
+                new ImmagineModal(this.plugin.app, imm, (x) => void scelta(x)).open();
+              })
+            );
+            imp.addButton(
+              (b) => b.setButtonText("Dal computer\u2026").onClick(() => {
+                const sel = createEl("input");
+                sel.type = "file";
+                sel.accept = "image/*";
+                sel.onchange = async () => {
+                  var _a;
+                  const file = (_a = sel.files) == null ? void 0 : _a[0];
+                  if (!file) return;
+                  try {
+                    await scelta(await this.plugin.importaImmagine(file));
+                  } catch (e) {
+                    new NoticeT(`Impossibile aggiungere l'immagine: ${e.message}`);
+                  }
+                };
+                sel.click();
+              })
+            );
+            imp.addButton(
+              (b) => b.setButtonText("Nessuna").onClick(async () => {
+                s.vlImmagine = "";
+                await this.plugin.salvaImpostazioni();
+                rinnova();
+              })
+            );
+            if (esiste) {
+              new import_obsidian.Setting(containerEl).setName("Adattamento dell'immagine").setDesc("Copri tutto riempie l'area (tagliando i bordi), Adatta mostra l'immagine intera, Ripeti la ripete come un tappeto.").addDropdown(
+                (d) => d.addOptions({ cover: "Copri tutto", contain: "Adatta", repeat: "Ripeti" }).setValue(s.vlImgModo).onChange(async (v) => {
+                  s.vlImgModo = v === "contain" || v === "repeat" ? v : "cover";
+                  await this.plugin.salvaImpostazioni();
+                })
+              );
+              new import_obsidian.Setting(containerEl).setName("Oscura l'immagine").setDesc("Velatura scura (da 0 a 70 %) per far risaltare i libri.").addSlider(
+                (sl) => conTooltip(sl).setLimits(0, 70, 5).setValue(s.vlImgOscura).onChange(async (v) => {
+                  s.vlImgOscura = v;
+                  await this.plugin.salvaImpostazioni();
+                })
+              );
+              new import_obsidian.Setting(containerEl).setName("Sfocatura").setDesc("Effetto fuori fuoco (da 0 a 20 px) per non distrarre dai libri.").addSlider(
+                (sl) => conTooltip(sl).setLimits(0, 20, 1).setValue(s.vlImgSfoca).onChange(async (v) => {
+                  s.vlImgSfoca = v;
+                  await this.plugin.salvaImpostazioni();
+                })
+              );
+            }
+          }
+          new import_obsidian.Setting(containerEl).setName("Sfondo della libreria").setDesc("Predefinito: legno. Scegliendo un colore, lo sfondo diventa una tinta unita.").addColorPicker(
+            (cp) => cp.setValue(s.vlSfondo || "#b58650").onChange(async (v) => {
+              s.vlSfondo = v;
+              await this.plugin.salvaImpostazioni();
+            })
+          ).addExtraButton(
+            (b) => b.setIcon("reset").setTooltip("Usa il legno").onClick(async () => {
+              s.vlSfondo = "";
+              await this.plugin.salvaImpostazioni();
+              rinnova();
+            })
+          );
+          {
+            const generi = /* @__PURE__ */ new Map();
+            for (const l of this.plugin.tuttiILibri()) {
+              const g = l.genere.trim();
+              if (g && !generi.has(g.toLowerCase())) generi.set(g.toLowerCase(), g);
+            }
+            new import_obsidian.Setting(containerEl).setName("Colori per genere").setDesc("Colore del dorso dei libri di ogni genere. Senza una scelta, il genere ha una tinta automatica sempre uguale.");
+            for (const [chiave, nome] of [...generi].sort((p, q) => p[1].localeCompare(q[1], "it"))) {
+              new import_obsidian.Setting(containerEl).setName(nome).addColorPicker(
+                (cp) => cp.setValue(coloreGenere(s, nome)).onChange(async (v) => {
+                  s.vlGeneri[chiave] = v;
+                  await this.plugin.salvaImpostazioni();
+                })
+              ).addExtraButton(
+                (b) => b.setIcon("reset").setTooltip("Usa la tinta automatica").onClick(async () => {
+                  delete s.vlGeneri[chiave];
+                  await this.plugin.salvaImpostazioni();
+                  rinnova();
+                })
+              );
+            }
+          }
+          {
+            let conferma = false;
+            new import_obsidian.Setting(containerEl).setName("Ordine dei libri").setDesc("Cancella le posizioni scelte trascinando e riporta i libri in ordine di codice, dal pi\xF9 alto al pi\xF9 basso.").addButton(
+              (b) => b.setButtonText("Ripristina l'ordine per codice").onClick(async () => {
+                if (!conferma) {
+                  conferma = true;
+                  b.setButtonText("Premi ancora per confermare");
+                  window.setTimeout(() => {
+                    conferma = false;
+                    b.setButtonText("Ripristina l'ordine per codice");
+                  }, 4e3);
+                  return;
+                }
+                s.vlOrdine = [];
+                s.vlCriterio = "";
+                await this.plugin.salvaImpostazioni();
+                new NoticeT("Ordine ripristinato.");
+                conferma = false;
+                b.setButtonText("Ripristina l'ordine per codice");
+              })
+            );
+          }
+        }
+      },
+      {
+        nome: "Copertina",
+        disegna: (containerEl, rinnova) => {
+          const s = this.plugin.settings;
+          new import_obsidian.Setting(containerEl).setName("Copertina").setHeading();
+          new import_obsidian.Setting(containerEl).setName("Altezza della copertina").setDesc("Altezza massima dell'immagine nel dettaglio del libro, in pixel (da 80 a 600). Il pulsante a destra riporta il valore predefinito (240).").addSlider(
+            (sl) => conTooltip(sl).setLimits(80, 600, 10).setValue(s.altezzaCopertina).onChange(async (v) => {
+              s.altezzaCopertina = v;
+              await this.plugin.salvaImpostazioni();
+              this.plugin.applicaLarghezza();
+            })
+          ).addExtraButton(
+            (b) => b.setIcon("reset").setTooltip("Ripristina la dimensione predefinita").onClick(async () => {
+              s.altezzaCopertina = DEFAULTS.altezzaCopertina;
+              await this.plugin.salvaImpostazioni();
+              this.plugin.applicaLarghezza();
+              rinnova();
+            })
+          );
+        }
+      },
+      {
+        nome: "Galleria immagini",
+        disegna: (containerEl, rinnova) => {
+          const s = this.plugin.settings;
+          new import_obsidian.Setting(containerEl).setName("Galleria immagini").setHeading();
+          new import_obsidian.Setting(containerEl).setName("Dimensione delle anteprime").setDesc("Larghezza in pixel delle anteprime nella galleria immagini (da 120 a 600). Il pulsante a destra riporta il valore predefinito (260).").addSlider(
+            (sl) => conTooltip(sl).setLimits(120, 600, 10).setValue(s.galleriaMiniatura).onChange(async (v) => {
+              s.galleriaMiniatura = v;
+              await this.plugin.salvaImpostazioni();
+              this.plugin.applicaLarghezza();
+            })
+          ).addExtraButton(
+            (b) => b.setIcon("rotate-ccw").setTooltip("Ripristina la dimensione predefinita").onClick(async () => {
+              s.galleriaMiniatura = DEFAULTS.galleriaMiniatura;
+              await this.plugin.salvaImpostazioni();
+              this.plugin.applicaLarghezza();
+              rinnova();
+            })
+          );
+        }
+      },
+      {
+        nome: "Barra di lettura",
+        disegna: (containerEl, rinnova) => {
+          const s = this.plugin.settings;
+          new import_obsidian.Setting(containerEl).setName("Barra di lettura").setHeading();
+          new import_obsidian.Setting(containerEl).setName("Spessore della barra").setDesc("Altezza in pixel della barra di avanzamento nella sezione Lettura del dettaglio libro.").addSlider(
+            (sl) => conTooltip(sl).setLimits(6, 40, 1).setValue(s.spessoreBarra).onChange(async (v) => {
+              s.spessoreBarra = v;
+              await this.plugin.salvaImpostazioni();
+              this.plugin.applicaLarghezza();
+              aggiornaAnteprimaBarra();
+            })
+          );
+          new import_obsidian.Setting(containerEl).setName("Barra sfumata").setDesc("Se attiva, la barra passa da un colore di partenza a uno di arrivo.").addToggle(
+            (t) => t.setValue(s.barraSfumata).onChange(async (v) => {
+              s.barraSfumata = v;
+              await this.plugin.salvaImpostazioni();
+              this.plugin.applicaLarghezza();
+              rinnova();
+            })
+          );
+          new import_obsidian.Setting(containerEl).setName(s.barraSfumata ? "Colore di partenza" : "Colore della barra").addColorPicker(
+            (cp) => cp.setValue(s.coloreBarra).onChange(async (v) => {
+              s.coloreBarra = v;
+              await this.plugin.salvaImpostazioni();
+              this.plugin.applicaLarghezza();
+              aggiornaAnteprimaBarra();
+            })
+          ).addExtraButton(
+            (b) => b.setIcon("reset").setTooltip("Ripristina il colore predefinito").onClick(async () => {
+              s.coloreBarra = DEFAULTS.coloreBarra;
+              await this.plugin.salvaImpostazioni();
+              this.plugin.applicaLarghezza();
+              rinnova();
+            })
+          );
+          if (s.barraSfumata) {
+            new import_obsidian.Setting(containerEl).setName("Colore di arrivo").addColorPicker(
+              (cp) => cp.setValue(s.coloreBarraFine).onChange(async (v) => {
+                s.coloreBarraFine = v;
+                await this.plugin.salvaImpostazioni();
+                this.plugin.applicaLarghezza();
+                aggiornaAnteprimaBarra();
+              })
+            ).addExtraButton(
+              (b) => b.setIcon("reset").setTooltip("Ripristina il colore predefinito").onClick(async () => {
+                s.coloreBarraFine = DEFAULTS.coloreBarraFine;
+                await this.plugin.salvaImpostazioni();
+                this.plugin.applicaLarghezza();
+                rinnova();
+              })
+            );
+          }
+          const anteprimaBarra = containerEl.createDiv({ cls: "arl-progress arl-progress-lettura arl-barra-anteprima" });
+          const riempimento = anteprimaBarra.createDiv({ cls: "arl-progress-fill" });
+          riempimento.addClass("arl-progress-anteprima");
+          const aggiornaAnteprimaBarra = () => {
+            const { fill, sp } = this.plugin.stileBarra();
+            anteprimaBarra.style.height = `${sp}px`;
+            anteprimaBarra.style.borderRadius = `${sp / 2}px`;
+            riempimento.style.background = fill;
+          };
           aggiornaAnteprimaBarra();
-        })
-      ).addExtraButton(
-        (b) => b.setIcon("reset").setTooltip("Ripristina il colore predefinito").onClick(async () => {
-          s.coloreBarraFine = DEFAULTS.coloreBarraFine;
-          await this.plugin.salvaImpostazioni();
-          this.plugin.applicaLarghezza();
-          this.display();
-        })
-      );
-    }
-    const anteprimaBarra = containerEl.createDiv({ cls: "arl-progress arl-progress-lettura arl-barra-anteprima" });
-    const riempimento = anteprimaBarra.createDiv({ cls: "arl-progress-fill" });
-    riempimento.addClass("arl-progress-anteprima");
-    const aggiornaAnteprimaBarra = () => {
-      const { fill, sp } = this.plugin.stileBarra();
-      anteprimaBarra.style.height = `${sp}px`;
-      anteprimaBarra.style.borderRadius = `${sp / 2}px`;
-      riempimento.style.background = fill;
-    };
-    aggiornaAnteprimaBarra();
-    new import_obsidian.Setting(containerEl).setName("Grafico di lettura").setHeading();
-    const anteprimaGrafico = containerEl.createDiv();
-    const aggiornaAnteprimaGrafico = () => {
-      const esempio = [12, 30, 22, 0, 41, 18, 55, 35, 20, 44];
-      const punti = esempio.map((pg, i) => ({ data: `2026-01-${String(i + 1).padStart(2, "0")}`, pagine: pg }));
-      disegnaGrafico(anteprimaGrafico, punti, this.plugin.stileGrafico(), false);
-    };
-    new import_obsidian.Setting(containerEl).setName("Spessore della linea").setDesc("Spessore della linea del grafico (da 1 a 10).").addSlider(
-      (sl) => sl.setLimits(1, 10, 1).setValue(s.spessoreGrafico).setDynamicTooltip().onChange(async (v) => {
-        s.spessoreGrafico = v;
-        await this.plugin.salvaImpostazioni();
-        aggiornaAnteprimaGrafico();
-      })
-    );
-    new import_obsidian.Setting(containerEl).setName("Grafico sfumato").setDesc("Se attivo, la linea passa da un colore di partenza a uno di arrivo.").addToggle(
-      (t) => t.setValue(s.graficoSfumato).onChange(async (v) => {
-        s.graficoSfumato = v;
-        await this.plugin.salvaImpostazioni();
-        this.display();
-      })
-    );
-    new import_obsidian.Setting(containerEl).setName(s.graficoSfumato ? "Colore di partenza del grafico" : "Colore del grafico").addColorPicker(
-      (cp) => cp.setValue(s.coloreGrafico).onChange(async (v) => {
-        s.coloreGrafico = v;
-        await this.plugin.salvaImpostazioni();
-        aggiornaAnteprimaGrafico();
-      })
-    ).addExtraButton(
-      (b) => b.setIcon("reset").setTooltip("Ripristina il colore predefinito").onClick(async () => {
-        s.coloreGrafico = DEFAULTS.coloreGrafico;
-        await this.plugin.salvaImpostazioni();
-        this.display();
-      })
-    );
-    if (s.graficoSfumato) {
-      new import_obsidian.Setting(containerEl).setName("Colore di arrivo del grafico").addColorPicker(
-        (cp) => cp.setValue(s.coloreGraficoFine).onChange(async (v) => {
-          s.coloreGraficoFine = v;
-          await this.plugin.salvaImpostazioni();
+        }
+      },
+      {
+        nome: "Grafico di lettura",
+        disegna: (containerEl, rinnova) => {
+          const s = this.plugin.settings;
+          new import_obsidian.Setting(containerEl).setName("Grafico di lettura").setHeading();
+          const anteprimaGrafico = containerEl.createDiv();
+          const aggiornaAnteprimaGrafico = () => {
+            const esempio = [12, 30, 22, 0, 41, 18, 55, 35, 20, 44];
+            const punti = esempio.map((pg, i) => ({ data: `2026-01-${String(i + 1).padStart(2, "0")}`, pagine: pg }));
+            disegnaGrafico(anteprimaGrafico, punti, this.plugin.stileGrafico(), false);
+          };
+          new import_obsidian.Setting(containerEl).setName("Spessore della linea").setDesc("Spessore della linea del grafico (da 1 a 10).").addSlider(
+            (sl) => conTooltip(sl).setLimits(1, 10, 1).setValue(s.spessoreGrafico).onChange(async (v) => {
+              s.spessoreGrafico = v;
+              await this.plugin.salvaImpostazioni();
+              aggiornaAnteprimaGrafico();
+            })
+          );
+          new import_obsidian.Setting(containerEl).setName("Grafico sfumato").setDesc("Se attivo, la linea passa da un colore di partenza a uno di arrivo.").addToggle(
+            (t) => t.setValue(s.graficoSfumato).onChange(async (v) => {
+              s.graficoSfumato = v;
+              await this.plugin.salvaImpostazioni();
+              rinnova();
+            })
+          );
+          new import_obsidian.Setting(containerEl).setName(s.graficoSfumato ? "Colore di partenza del grafico" : "Colore del grafico").addColorPicker(
+            (cp) => cp.setValue(s.coloreGrafico).onChange(async (v) => {
+              s.coloreGrafico = v;
+              await this.plugin.salvaImpostazioni();
+              aggiornaAnteprimaGrafico();
+            })
+          ).addExtraButton(
+            (b) => b.setIcon("reset").setTooltip("Ripristina il colore predefinito").onClick(async () => {
+              s.coloreGrafico = DEFAULTS.coloreGrafico;
+              await this.plugin.salvaImpostazioni();
+              rinnova();
+            })
+          );
+          if (s.graficoSfumato) {
+            new import_obsidian.Setting(containerEl).setName("Colore di arrivo del grafico").addColorPicker(
+              (cp) => cp.setValue(s.coloreGraficoFine).onChange(async (v) => {
+                s.coloreGraficoFine = v;
+                await this.plugin.salvaImpostazioni();
+                aggiornaAnteprimaGrafico();
+              })
+            ).addExtraButton(
+              (b) => b.setIcon("reset").setTooltip("Ripristina il colore predefinito").onClick(async () => {
+                s.coloreGraficoFine = DEFAULTS.coloreGraficoFine;
+                await this.plugin.salvaImpostazioni();
+                rinnova();
+              })
+            );
+          }
           aggiornaAnteprimaGrafico();
-        })
-      ).addExtraButton(
-        (b) => b.setIcon("reset").setTooltip("Ripristina il colore predefinito").onClick(async () => {
-          s.coloreGraficoFine = DEFAULTS.coloreGraficoFine;
-          await this.plugin.salvaImpostazioni();
-          this.display();
-        })
-      );
-    }
-    aggiornaAnteprimaGrafico();
-    new import_obsidian.Setting(containerEl).setName("Colori del voto").setHeading();
-    new import_obsidian.Setting(containerEl).setName("Colora in base al voto").setDesc("Barre dei temi, punteggio ARL e lista prendono il colore della fascia di voto. I colori si scelgono in ogni set (Set di valutazione \u2192 Modifica).").addToggle(
-      (t) => t.setValue(s.votoColori).onChange(async (v) => {
-        s.votoColori = v;
-        await this.plugin.salvaImpostazioni();
-      })
-    );
-    new import_obsidian.Setting(containerEl).setName("Spessore delle barre dei temi").setDesc("Altezza in pixel delle barre dei temi nel dettaglio del libro.").addSlider(
-      (sl) => sl.setLimits(4, 30, 1).setValue(s.spessoreTemi).setDynamicTooltip().onChange(async (v) => {
-        s.spessoreTemi = v;
-        await this.plugin.salvaImpostazioni();
-        this.plugin.applicaLarghezza();
-      })
-    );
-    new import_obsidian.Setting(containerEl).setName("Barre sfumate tra le fasce").setDesc("Se attivo, la barra passa gradualmente dal colore delle fasce pi\xF9 basse a quello della fascia raggiunta; altrimenti \xE8 tinta unita.").addToggle(
-      (t) => t.setValue(s.votoSfumato).onChange(async (v) => {
-        s.votoSfumato = v;
-        await this.plugin.salvaImpostazioni();
-      })
-    );
-    new import_obsidian.Setting(containerEl).setName("Stelle").setHeading();
-    new import_obsidian.Setting(containerEl).setName("Stelle totali").setDesc("Il punteggio ARL resta da 0 a 10; cambia solo la conversione in stelle.").addDropdown((d) => {
-      const opzioni = {};
-      for (let n = 3; n <= 10; n++) opzioni[String(n)] = String(n);
-      d.addOptions(opzioni).setValue(String(s.stelleTotali)).onChange(async (v) => {
-        s.stelleTotali = parseInt(v, 10);
-        await this.plugin.salvaImpostazioni();
-        this.display();
-      });
-    });
-    containerEl.createDiv({
-      cls: "setting-item-description",
-      text: "Le soglie per assegnare le stelle si impostano in ogni set di valutazione (Set di valutazione \u2192 Modifica)."
-    });
+        }
+      },
+      {
+        nome: "Colori del voto",
+        disegna: (containerEl, rinnova) => {
+          const s = this.plugin.settings;
+          new import_obsidian.Setting(containerEl).setName("Colori del voto").setHeading();
+          new import_obsidian.Setting(containerEl).setName("Colora in base al voto").setDesc("Barre dei temi, punteggio ARL e lista prendono il colore della fascia di voto. I colori si scelgono in ogni set (Set di valutazione \u2192 Modifica).").addToggle(
+            (t) => t.setValue(s.votoColori).onChange(async (v) => {
+              s.votoColori = v;
+              await this.plugin.salvaImpostazioni();
+            })
+          );
+          new import_obsidian.Setting(containerEl).setName("Spessore delle barre dei temi").setDesc("Altezza in pixel delle barre dei temi nel dettaglio del libro.").addSlider(
+            (sl) => conTooltip(sl).setLimits(4, 30, 1).setValue(s.spessoreTemi).onChange(async (v) => {
+              s.spessoreTemi = v;
+              await this.plugin.salvaImpostazioni();
+              this.plugin.applicaLarghezza();
+            })
+          );
+          new import_obsidian.Setting(containerEl).setName("Barre sfumate tra le fasce").setDesc("Se attivo, la barra passa gradualmente dal colore delle fasce pi\xF9 basse a quello della fascia raggiunta; altrimenti \xE8 tinta unita.").addToggle(
+            (t) => t.setValue(s.votoSfumato).onChange(async (v) => {
+              s.votoSfumato = v;
+              await this.plugin.salvaImpostazioni();
+            })
+          );
+        }
+      },
+      {
+        nome: "Stelle",
+        disegna: (containerEl, rinnova) => {
+          const s = this.plugin.settings;
+          new import_obsidian.Setting(containerEl).setName("Stelle").setHeading();
+          new import_obsidian.Setting(containerEl).setName("Stelle totali").setDesc("Il punteggio ARL resta da 0 a 10; cambia solo la conversione in stelle.").addDropdown((d) => {
+            const opzioni = {};
+            for (let n = 3; n <= 10; n++) opzioni[String(n)] = String(n);
+            d.addOptions(opzioni).setValue(String(s.stelleTotali)).onChange(async (v) => {
+              s.stelleTotali = parseInt(v, 10);
+              await this.plugin.salvaImpostazioni();
+              rinnova();
+            });
+          });
+          containerEl.createDiv({
+            cls: "setting-item-description",
+            text: "Le soglie per assegnare le stelle si impostano in ogni set di valutazione (Set di valutazione \u2192 Modifica)."
+          });
+        }
+      }
+    ];
   }
 };

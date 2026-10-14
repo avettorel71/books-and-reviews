@@ -1,3 +1,10 @@
+# Books and Reviews 1.0.2
+
+- Settings use Obsidian 1.13's declarative settings API: the options are searchable in Obsidian's settings search, organised in one page per section. Obsidian versions before 1.13 keep the previous settings screen unchanged.
+- Slider values use Obsidian's built-in inline display on 1.13+ (the hover tooltip is kept only on older versions).
+
+---
+
 # Books and Reviews 1.0.1
 
 Maintenance release: code-quality fixes requested by the Obsidian review.
