@@ -4,7 +4,7 @@
 
 > Interface languages: **English** and **Italian** (switchable in the settings, live, no restart).
 
-![The library: sortable list, coloured ARL scores, stars and a sticky totals bar](screenshots/screenshot01.jpg)
+![The library: sortable list, coloured ARL scores, stars and a sticky totals bar](screenshots/Screenshot01.jpg)
 
 *The library: sortable list, coloured ARL scores, stars and a sticky totals bar*
 
@@ -92,7 +92,7 @@ Requires Obsidian **1.5.0** or later.
 3. **Rate book** → choose the book and a set (e.g. *Novels*) → answer the questions screen by screen.
 4. Open the **Library** to browse, sort and search; click a book for its full detail page.
 
-![The book detail page: ARL score, stars and one coloured bar per theme](screenshots/screenshot02.jpg)
+![The book detail page: ARL score, stars and one coloured bar per theme](screenshots/Screenshot02.jpg)
 
 *The book detail page: ARL score, stars and one coloured bar per theme*
 
@@ -114,7 +114,7 @@ Example: Plot 9/10, Characters 9/10, Writing style 6/10, Setting 7/10, Emotions 
 
 The questions are shown a few at a time (1, 2, 5 or 10 per screen, configurable). You can go back, change answers, and re-open a review later with **Review again**.
 
-![The questionnaire: Yes / No questions, progress bar, live ARL and stars at the top right, current question highlighted](screenshots/screenshot03.jpg)
+![The questionnaire: Yes / No questions, progress bar, live ARL and stars at the top right, current question highlighted](screenshots/Screenshot03.jpg)
 
 *The questionnaire: Yes / No questions with progress bar and Back / Next buttons, live ARL and stars at the top right, and the current question highlighted*
 
@@ -156,7 +156,7 @@ The bundled Novels and Essays sets are calibrated at the reference level. The ed
 
 For books you don't want to go through the questionnaire (old reads, quick ratings), use **Manual rating**: type an ARL score from 0 to 10 and pick a set; stars, colours and statistics work as usual.  Manually rated books are marked with ✎ in the list.
 
-![Manual rating: type an ARL score and choose the set; the preview shows stars and colour](screenshots/screenshot05.jpg)
+![Manual rating: type an ARL score and choose the set; the preview shows stars and colour](screenshots/Screenshot05.jpg)
 
 *Manual rating: type an ARL score and choose the set; the preview shows stars and colour*
 
@@ -181,7 +181,7 @@ Each bundled set has **5 themes × 10 questions** and equal weights. They live i
 
 *Open → Evaluation sets*:
 
-![The evaluation sets screen: every set with its difficulty level and the Edit / Duplicate / Open file buttons](screenshots/screenshot06.jpg)
+![The evaluation sets screen: every set with its difficulty level and the Edit / Duplicate / Open file buttons](screenshots/Screenshot06.jpg)
 
 *The evaluation sets screen: every set with its difficulty level and the Edit / Duplicate / Open file buttons*
 
@@ -274,11 +274,11 @@ Existing sets without a `colori` line keep working with the default palette; the
 - The **Rate book** page uses the same list, with books still to be rated first.
 - The toolbar at the top of the plugin reads: **New book · Library · Virtual library · Library information · Rate book · Evaluation sets**.
 
-![The Library information window: statistics on the whole library on two columns](screenshots/screenshot20.jpg)
+![The Library information window: statistics on the whole library on two columns](screenshots/Screenshot25.jpg)
 
 *The Library information window: statistics on the whole library on two columns*
 
-![Library toolbar: live search, status filter and sortable column headers](screenshots/screenshot08.jpg)
+![Library toolbar: live search, status filter and sortable column headers](screenshots/Screenshot08.jpg)
 
 *Library toolbar: live search, status filter and sortable column headers*
 
@@ -298,7 +298,7 @@ The virtual library recreates that experience inside Obsidian:
 - **The position is yours**: you pick a book up with the mouse and put it somewhere else. The arrangement is saved and is there when you come back, so the shelf slowly becomes *your* shelf and not just another sorted view.
 - **It is a complement, not a replacement**: the list stays the place for data work; the bookshelf is the place for browsing, remembering and arranging. Nothing you do on the shelf changes your notes — positions are kept in the plugin's own settings.
 
-![The virtual library: shelves with coloured spines, codes at the foot, the toolbar on one row and a background image](screenshots/screenshot21.jpg)
+![The virtual library: shelves with coloured spines, codes at the foot, the toolbar on one row and a background image](screenshots/Screenshot21.jpg)
 
 *The virtual library: shelves with coloured spines and codes, the one-row toolbar (arrangement and sorting) and the optional background image*
 
@@ -384,7 +384,7 @@ Code: [ ↓ ] [ ↑ ]  │  Reading: [ ↓ ] [ ↑ ]  │  Pages: [ ↓ ] [ ↑ 
 
 Every screen reached from the library has a clearly visible **← Back** button in the top left corner (detail page, image gallery, choice of the set). On the questionnaire the **Back** and **Next** buttons sit at the bottom. **Esc** goes back or closes dialogs without leaving the plugin.
 
-![The ← Back button in the top left of a book's detail page](screenshots/screenshot29.jpg)
+![The ← Back button in the top left of a book's detail page](screenshots/Screenshot32.jpg)
 
 *The ← Back button in the top left of a book's detail page*
 
@@ -403,17 +403,17 @@ Under **Reading progress** you log each session: **date + first page + last page
 - **Pages read, total pages of the book, pages remaining, days of reading and average pages per day**, shown as a summary line, for example *Total: 200 pages out of 305 · 105 pages remaining · 8 reading days · average 25 pages per day*. The **remaining pages** are counted from the **last page reached** (not from the sum of the sessions), so re-reading a page does not distort them;
 - a **progress bar** (pages read vs. total pages) with configurable **thickness** and **colours** (solid or gradient), with a live preview in the settings;
 
-![Reading progress: the log of sessions (date, first and last page) with summary, pages remaining and progress bar](screenshots/screenshot09.jpg)
+![Reading progress: the log of sessions (date, first and last page) with summary, pages remaining and progress bar](screenshots/Screenshot09.jpg)
 
 *Reading progress: the log of sessions (date, first and last page) with summary, pages remaining and progress bar*
 
 - the **Chart** button (visible as soon as there is a log): a smooth **curve of pages read per day**, days on the horizontal axis and pages on the vertical axis, with gradient stroke, area, **tooltips** on hover, the same totals line (pages read, total, remaining, days, average) and a customisable colour pair, thickness and gradient on/off — again with a live preview in the settings.
 
-![The pages-per-day chart with gradient curve and tooltip](screenshots/screenshot10.jpg)
+![The pages-per-day chart with gradient curve and tooltip](screenshots/Screenshot10.jpg)
 
 *The pages-per-day chart with gradient curve and tooltip*
 
-![The chart with its totals line: pages read, total, pages remaining, reading days and average](screenshots/screenshot19.jpg)
+![The chart with its totals line: pages read, total, pages remaining, reading days and average](screenshots/Screenshot24.jpg)
 
 *The chart with its totals line: pages read, total, pages remaining, reading days and average*
 
@@ -424,7 +424,7 @@ Under **Reading progress** you log each session: **date + first page + last page
 - **Quotes and annotations**: free Markdown text saved in the note body under a dedicated section, so you can also edit it in the normal Obsidian editor.
 - Everything is plain Markdown in the book's note — **Open note** jumps to it at any time.
 
-![Characters and quotes: the editing screens for a book](screenshots/screenshot11.jpg)
+![Characters and quotes: the editing screens for a book](screenshots/Screenshot11.jpg)
 
 *Characters and quotes: the editing screens for a book*
 
@@ -439,7 +439,7 @@ Three ways to attach a cover:
 
 The maximum cover height in the detail page is configurable (80–600 px) with a **reset** button to the default size.
 
-![Edit data: the cover field with "Choose…" and "From computer…" and the loan fields](screenshots/screenshot12.jpg)
+![Edit data: the cover field with "Choose…" and "From computer…" and the loan fields](screenshots/Screenshot12.jpg)
 
 *Edit data: the cover field with "Choose…" and "From computer…" and the loan fields*
 
@@ -455,7 +455,7 @@ The **Image gallery** button (next to *Reading progress*) opens a dedicated page
 - **Optional captions.** Under each image a small **✎** lets you add a short text (one line, up to 200 characters). If you don't write anything, **nothing is shown** under the image. The caption is also visible and editable in the actual-size viewer, below the image, and changes together with the image when you browse. Captions are saved with the image in the note (`galleria: "[[image.jpg]] | caption"`) and as an italic line under the embedded image.
 - The gallery is saved in the note (`galleria` property and a `## Galleria` section with the embedded images), so the pictures are also visible in the normal Obsidian editor.
 
-![The image gallery page with large thumbnails and optional captions](screenshots/screenshot17.jpg)
+![The image gallery page with large thumbnails and optional captions](screenshots/Screenshot17.jpg)
 
 *The image gallery page: large thumbnails, optional captions under some images and the ✎ edit button*
 
@@ -463,7 +463,7 @@ The **Image gallery** button (next to *Reading progress*) opens a dedicated page
 
 Set a **return date** and the plugin tracks it: the list and the detail show *time remaining* (months, days and hours), *Overdue by n days* in red, or *Returned* when you tick **Returned** / press **Mark as returned**. The deadline is the end of the chosen day.
 
-![Return column: time remaining until the return date, shown next to the days elapsed](screenshots/screenshot13.jpg)
+![Return column: time remaining until the return date, shown next to the days elapsed](screenshots/Screenshot13.jpg)
 
 *Return column: time remaining until the return date*
 
@@ -535,7 +535,7 @@ The arrangement of the virtual library and the other preferences are **not** sto
 
 Everything lives in your vault as Markdown, so you can query it with Dataview, Bases, or any tool — and nothing is locked into the plugin. Plugin preferences are stored in `data.json` inside the plugin folder.
 
-![A book note in Obsidian's normal editor: the frontmatter and the sections](screenshots/screenshot15.jpg)
+![A book note in Obsidian's normal editor: the frontmatter and the sections](screenshots/Screenshot15.jpg)
 
 *A book note in Obsidian's normal editor: the frontmatter and the sections*
 
