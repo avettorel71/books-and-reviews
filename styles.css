@@ -1145,3 +1145,8 @@
 .arl-guida p { margin: 4px 0; }
 .arl-benvenuto { text-align: left; padding: 18px 4px; }
 .arl-benvenuto h3 { margin-top: 0; }
+
+.arl-oculto { display: none !important; }
+.arl-forte { font-weight: 600; }
+.arl-progress-anteprima { width: 65%; }
+.arl-vl-sfondo { background-position: center; }

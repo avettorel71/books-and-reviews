@@ -1825,7 +1825,7 @@ function disegnaGrafico(
 
 	if (conTooltip && n > 0) {
 		const tip = box.createDiv({ cls: "arl-gr-tip" });
-		tip.style.display = "none";
+		tip.addClass("arl-oculto");
 		svg.addEventListener("mousemove", (ev: MouseEvent) => {
 			const r = svg.getBoundingClientRect();
 			const x = ((ev.clientX - r.left) / r.width) * W;
@@ -1842,7 +1842,7 @@ function disegnaGrafico(
 			marcatore.setAttribute("cy", String(pts[k][1]));
 			marcatore.setAttribute("visibility", "visible");
 			tip.setText(`${fmtData(punti[k].data)} · ${plurale(punti[k].pagine, "pagina", "pagine")}`);
-			tip.style.display = "";
+			tip.removeClass("arl-oculto");
 			const px = (pts[k][0] / W) * r.width;
 			const py = (pts[k][1] / H) * r.height;
 			tip.style.left = `${Math.min(Math.max(px, 60), r.width - 60)}px`;
@@ -1850,7 +1850,7 @@ function disegnaGrafico(
 		});
 		svg.addEventListener("mouseleave", () => {
 			marcatore.setAttribute("visibility", "hidden");
-			tip.style.display = "none";
+			tip.addClass("arl-oculto");
 		});
 	}
 }
@@ -3862,7 +3862,7 @@ class ArchiveView {
 				const col = l.valutato ? this.plugin.coloreVotoDi(l.arl, l.set) : "";
 				if (col) {
 					td.style.color = col;
-					td.style.fontWeight = "600";
+					td.addClass("arl-forte");
 				}
 			},
 			valutazione: (r, l) => {
@@ -4531,15 +4531,15 @@ class ArchiveView {
 			void this.main.mostraValutazione(l, rivedibile ? 1 : 0, () => void this.main.mostraArchivio(l.file.path));
 
 		const boxMan = c.createDiv({ cls: "arl-personaggi" });
-		boxMan.style.display = "none";
+		boxMan.addClass("arl-oculto");
 		const btnMan = azioni.createEl("button", { text: "Valutazione manuale" });
 		btnMan.onclick = () => {
-			if (boxMan.style.display !== "none") {
-				boxMan.style.display = "none";
+			if (!boxMan.hasClass("arl-oculto")) {
+				boxMan.addClass("arl-oculto");
 				btnMan.classList.remove("mod-cta");
 			} else {
 				this.renderManuale(boxMan, l);
-				boxMan.style.display = "";
+				boxMan.removeClass("arl-oculto");
 				btnMan.classList.add("mod-cta");
 			}
 		};
@@ -4557,56 +4557,56 @@ class ArchiveView {
 			};
 		}
 		const boxPers = c.createDiv({ cls: "arl-personaggi" });
-		boxPers.style.display = "none";
+		boxPers.addClass("arl-oculto");
 		const btnPers = azioni.createEl("button", {
 			text: l.personaggi.length ? `Personaggi (${l.personaggi.length})` : "Personaggi",
 		});
 		btnPers.onclick = () => {
-			if (boxPers.style.display !== "none") {
-				boxPers.style.display = "none";
+			if (!boxPers.hasClass("arl-oculto")) {
+				boxPers.addClass("arl-oculto");
 				btnPers.classList.remove("mod-cta");
 			} else {
 				this.renderPersonaggi(boxPers, l, btnPers);
-				boxPers.style.display = "";
+				boxPers.removeClass("arl-oculto");
 				btnPers.classList.add("mod-cta");
 			}
 		};
 		const boxAnn = c.createDiv({ cls: "arl-personaggi" });
-		boxAnn.style.display = "none";
+		boxAnn.addClass("arl-oculto");
 		const btnAnn = azioni.createEl("button", { text: "Estratti e annotazioni" });
 		btnAnn.onclick = () => {
-			if (boxAnn.style.display !== "none") {
-				boxAnn.style.display = "none";
+			if (!boxAnn.hasClass("arl-oculto")) {
+				boxAnn.addClass("arl-oculto");
 				btnAnn.classList.remove("mod-cta");
 			} else {
 				this.renderAnnotazioni(boxAnn, l);
-				boxAnn.style.display = "";
+				boxAnn.removeClass("arl-oculto");
 				btnAnn.classList.add("mod-cta");
 			}
 		};
 		const boxLet = c.createDiv({ cls: "arl-personaggi" });
-		boxLet.style.display = "none";
+		boxLet.addClass("arl-oculto");
 		const btnLet = azioni.createEl("button", {
 			text: l.letture.length ? `Andamento lettura (${l.letture.length})` : "Andamento lettura",
 		});
 		btnLet.onclick = () => {
-			if (boxLet.style.display !== "none") {
-				boxLet.style.display = "none";
+			if (!boxLet.hasClass("arl-oculto")) {
+				boxLet.addClass("arl-oculto");
 				btnLet.classList.remove("mod-cta");
 			} else {
 				this.renderLetture(boxLet, l, btnLet);
-				boxLet.style.display = "";
+				boxLet.removeClass("arl-oculto");
 				btnLet.classList.add("mod-cta");
 			}
 		};
 		if (apriLettura) btnLet.click();
 		if (l.letture.length) {
 			const boxGraf = c.createDiv({ cls: "arl-personaggi" });
-			boxGraf.style.display = "none";
+			boxGraf.addClass("arl-oculto");
 			const btnGraf = azioni.createEl("button", { text: "Grafico" });
 			btnGraf.onclick = () => {
-				if (boxGraf.style.display !== "none") {
-					boxGraf.style.display = "none";
+				if (!boxGraf.hasClass("arl-oculto")) {
+					boxGraf.addClass("arl-oculto");
 					btnGraf.classList.remove("mod-cta");
 					return;
 				}
@@ -4623,7 +4623,7 @@ class ArchiveView {
 					cls: "arl-info",
 					text: `Totale: ${totale} pagine${parteLibro} · ${plurale(giorni, "giorno", "giorni")} di lettura · media ${String(media).replace(".", ",")} pagine al giorno`,
 				});
-				boxGraf.style.display = "";
+				boxGraf.removeClass("arl-oculto");
 				btnGraf.classList.add("mod-cta");
 			};
 		}
@@ -5647,7 +5647,6 @@ class LibreriaVirtualeView implements Vista {
 			img.style.backgroundImage = `url("${url}")`;
 			img.style.backgroundSize = modo === "repeat" ? "auto" : modo;
 			img.style.backgroundRepeat = modo === "repeat" ? "repeat" : "no-repeat";
-			img.style.backgroundPosition = "center";
 			img.style.filter = sfocaCss > 0 ? `blur(${sfocaCss}px)` : "";
 			img.style.inset = sfocaCss > 0 ? `-${sfocaCss * 2}px` : "0";
 			img.addClass("is-pronto");
@@ -7096,7 +7095,7 @@ class ARLSettingTab extends PluginSettingTab {
 
 		const anteprimaBarra = containerEl.createDiv({ cls: "arl-progress arl-progress-lettura arl-barra-anteprima" });
 		const riempimento = anteprimaBarra.createDiv({ cls: "arl-progress-fill" });
-		riempimento.style.width = "65%";
+		riempimento.addClass("arl-progress-anteprima");
 		const aggiornaAnteprimaBarra = () => {
 			const { fill, sp } = this.plugin.stileBarra();
 			anteprimaBarra.style.height = `${sp}px`;
