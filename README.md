@@ -51,6 +51,7 @@
 - [Commands](#commands)
 - [Keyboard and focus behaviour](#keyboard-and-focus-behaviour)
 - [Building from source](#building-from-source)
+- [Version history](#version-history)
 - [License](#license)
 
 ---
@@ -570,6 +571,27 @@ npm run build    # type-check + production bundle (main.js)
 ```
 
 The bundled sets in `sets/` are embedded into `main.js` at build time (esbuild text loader).
+
+## Version history
+
+The plugin follows [semantic versioning](https://semver.org/): *major.minor.patch*. Every version is a GitHub release with `main.js`, `manifest.json` and `styles.css`. The same notes are in [RELEASE_NOTES.md](RELEASE_NOTES.md).
+
+| Version | Requires Obsidian | What changed |
+|---|---|---|
+| **1.0.1** | 1.8.0 | Maintenance release after the Obsidian code review: CSS classes instead of inline styles for showing/hiding and static styling; language detection through `getLanguage()`; stricter typing of frontmatter updates, `instanceof TFile` checks and Obsidian DOM helpers (`createEl`, `createDiv`); unused code removed; `builtin-modules` replaced by Node's `module.builtinModules`; two CSS lint fixes. No change to your notes or settings. |
+| **1.0.0** | 1.7.2 | First public release. See below. |
+
+### 1.0.0 in detail
+
+- **Library**: one note per book; list with search, status filter, sortable and configurable columns, sticky header and totals bar, *Library information* window.
+- **Reviews**: yes/no questionnaire grouped by weighted themes → **ARL score 0–10** and **stars**; manual rating; live ARL and stars while answering; highlight of the current question.
+- **Evaluation sets**: bundled Novels / Essays (English) and Romanzi / Saggi (Italian); editable sets with thresholds, score colours and a computed difficulty level; bilingual **Guide to sets**; welcome screen for an empty library (no books are bundled).
+- **Reading**: reading log, progress bar with *pages remaining*, pages-per-day chart.
+- **Book data**: characters, quotes and annotations, awards, price, covers, return dates, image gallery with optional captions.
+- **Virtual library**: bookshelf of coloured spines, drag and drop, one-row toolbar with sorting by code, reading date and pages, saved arrangements, optional background image, optimised redraw.
+- **Interface**: English and Italian, switchable live; visible **← Back** button; fonts, colours, widths and bar thicknesses configurable.
+
+---
 
 ## License
 
