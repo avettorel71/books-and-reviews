@@ -1,10 +1,13 @@
 name: Release
 
-# Si avvia quando invii un tag di versione, per esempio 1.0.1 (senza la «v»).
+# Si avvia a ogni push su main (e a mano da Actions → Run workflow).
+# Legge la versione da manifest.json: se non esiste ancora una release con quel
+# numero, compila il plugin e la crea con main.js, manifest.json e styles.css.
+# Se la release esiste già, non fa nulla.
 on:
   push:
-    tags:
-      - "[0-9]+.[0-9]+.[0-9]+"
+    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -12,34 +15,53 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Scarica il codice
         uses: actions/checkout@v4
 
+      - name: Legge la versione e controlla se la release esiste
+        id: ver
+        run: |
+          VERSIONE=$(node -p "require('./manifest.json').version")
+          echo "versione=$VERSIONE" >> "$GITHUB_OUTPUT"
+          if gh release view "$VERSIONE" >/dev/null 2>&1; then
+            echo "La release $VERSIONE esiste già: niente da fare."
+            echo "nuova=no" >> "$GITHUB_OUTPUT"
+          else
+            echo "La release $VERSIONE non esiste: la creo."
+            echo "nuova=si" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Controlla versions.json
+        if: steps.ver.outputs.nuova == 'si'
+        run: |
+          node -e "
+            const v=require('./manifest.json').version;
+            const m=require('./versions.json');
+            if(!m[v]){console.error('versions.json non contiene la versione '+v);process.exit(1)}
+          "
+
       - name: Installa Node.js
+        if: steps.ver.outputs.nuova == 'si'
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
-      - name: Controlla che il tag coincida con manifest.json
-        run: |
-          VERSIONE=$(node -p "require('./manifest.json').version")
-          if [ "$VERSIONE" != "${GITHUB_REF_NAME}" ]; then
-            echo "Il tag (${GITHUB_REF_NAME}) non coincide con la versione in manifest.json ($VERSIONE)."
-            exit 1
-          fi
-
       - name: Installa le dipendenze
+        if: steps.ver.outputs.nuova == 'si'
         run: npm install
 
       - name: Compila
+        if: steps.ver.outputs.nuova == 'si'
         run: npm run build
 
-      - name: Crea la release con i file del plugin
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Crea la release (il tag è il numero di versione, senza «v»)
+        if: steps.ver.outputs.nuova == 'si'
         run: |
-          gh release create "${GITHUB_REF_NAME}" \
+          gh release create "${{ steps.ver.outputs.versione }}" \
             main.js manifest.json styles.css \
-            --title "${GITHUB_REF_NAME}" \
+            --target "$GITHUB_SHA" \
+            --title "${{ steps.ver.outputs.versione }}" \
             --notes "See [RELEASE_NOTES.md](https://github.com/${GITHUB_REPOSITORY}/blob/main/RELEASE_NOTES.md) and the version history in the README."
