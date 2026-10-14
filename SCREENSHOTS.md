@@ -1,9 +1,10 @@
 # Screenshot checklist
 
-Save the images in the `screenshots/` folder as `Screenshot01.jpg` … `Screenshot32.jpg` (numbers 04, 07, 14, 16, 18 and 22–28 are intentionally unused) (JPG, width ~1200–1600 px, dark or light theme, same theme for all). Use a few real books with varied scores so the colours show.
+Save the images in the `screenshots/` folder as `Screenshot00.jpg` … `Screenshot32.jpg` (numbers 04, 07, 14, 16, 18 and 22–28 are intentionally unused) (JPG, width ~1200–1600 px, dark or light theme, same theme for all). Use a few real books with varied scores so the colours show.
 
 | File | Where it appears | What to show |
 |---|---|---|
+| Screenshot00.jpg | Top of the README | The **virtual bookshelf** in full, as the showcase image |
 | Screenshot01.jpg | Top of the README | The **Library** list with ~10 books: coloured ARL values (red/orange/yellow/green), stars, price column, sticky totals bar at the bottom |
 | Screenshot02.jpg | Quick start | **Book detail**: big coloured ARL, stars, 5 gradient theme bars, action buttons (like the one you already sent) |
 | Screenshot03.jpg | Review system | A **questionnaire screen** with **Live ARL on** and the **current question highlighted**: one theme, 5 Yes/No questions (the first ones answered, the next one with the green bar), progress bar, Back/Next, ARL value and stars at the top right |

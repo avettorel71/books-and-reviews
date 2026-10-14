@@ -2,6 +2,10 @@
 
 **Your personal library inside Obsidian.** Catalog every book as a note, rate it with a structured yes/no questionnaire, and get a transparent **ARL score (0–10)** with a configurable **star rating**. Keep your reading log, characters, quotes, covers and image galleries in the same place, see everything in a fast, sortable library list with progress bars and charts — and walk through your books in a **virtual bookshelf** where every book is a spine you can pick up and place wherever you like.
 
+![The virtual bookshelf: every book is a spine you can pick up and place wherever you like](screenshots/Screenshot00.jpg)
+
+*The virtual bookshelf: every book is a spine you can pick up and place wherever you like*
+
 > Interface languages: **English** and **Italian** (switchable in the settings, live, no restart).
 
 ![The library: sortable list, coloured ARL scores, stars and a sticky totals bar](screenshots/Screenshot01.jpg)
