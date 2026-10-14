@@ -88,7 +88,7 @@
 
 On first start the plugin creates the evaluation-set notes (in the language you selected) and the folders it needs.
 
-Requires Obsidian **1.8.0** or later.
+Requires Obsidian **1.7.2** or later.
 
 ## Quick start
 
@@ -578,7 +578,7 @@ The plugin follows [semantic versioning](https://semver.org/): *major.minor.patc
 
 | Version | Requires Obsidian | What changed |
 |---|---|---|
-| **1.0.1** | 1.8.0 | Maintenance release after the Obsidian code review: CSS classes instead of inline styles for showing/hiding and static styling; language detection through `getLanguage()`; stricter typing of frontmatter updates, `instanceof TFile` checks and Obsidian DOM helpers (`createEl`, `createDiv`); unused code removed; `builtin-modules` replaced by Node's `module.builtinModules`; two CSS lint fixes. No change to your notes or settings. |
+| **1.0.1** | 1.7.2 | Maintenance release after the Obsidian code review: CSS classes instead of inline styles for showing/hiding and static styling; default-language detection through Obsidian's own locale (`moment.locale()`); stricter typing of frontmatter updates, `instanceof TFile` checks and Obsidian DOM helpers (`createEl`, `createDiv`); unused code removed; `builtin-modules` replaced by Node's `module.builtinModules`; two CSS lint fixes. No change to your notes or settings. |
 | **1.0.0** | 1.7.2 | First public release. See below. |
 
 ### 1.0.0 in detail

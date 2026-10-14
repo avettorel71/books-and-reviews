@@ -3,7 +3,7 @@
 Maintenance release: code-quality fixes requested by the Obsidian review.
 
 - Uses CSS classes instead of inline styles for show/hide and static styling.
-- Language detection through Obsidian's `getLanguage()`; minimum Obsidian version is now **1.8.0**.
+- Default language is read from Obsidian's own locale instead of browser storage.
 - Safer typing of frontmatter updates, `instanceof TFile` checks and Obsidian DOM helpers.
 - Two CSS lint fixes (`gap` instead of `column-gap`, no `!important`).
 - Build: `builtin-modules` replaced by Node's `module.builtinModules`.

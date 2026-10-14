@@ -1,10 +1,10 @@
 import {
 	App,
-	getLanguage,
 	FuzzySuggestModal,
 	ItemView,
 	Menu,
 	Modal,
+	moment,
 	Notice,
 	Plugin,
 	PluginSettingTab,
@@ -1939,7 +1939,7 @@ export default class BooksAndReviewsPlugin extends Plugin {
 			// primo avvio: usa la lingua di Obsidian
 			let loc = "";
 			try {
-				loc = getLanguage();
+				loc = moment.locale();
 			} catch {
 				/* ignora */
 			}

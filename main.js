@@ -1564,7 +1564,7 @@ var BooksAndReviewsPlugin = class extends import_obsidian.Plugin {
     if (d.lingua !== "it" && d.lingua !== "en") {
       let loc = "";
       try {
-        loc = (0, import_obsidian.getLanguage)();
+        loc = import_obsidian.moment.locale();
       } catch (e) {
       }
       s.lingua = loc.toLowerCase().startsWith("it") || loc === "" ? "it" : "en";
