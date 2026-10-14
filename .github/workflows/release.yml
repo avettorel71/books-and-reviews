@@ -1,0 +1,45 @@
+name: Release
+
+# Si avvia quando invii un tag di versione, per esempio 1.0.1 (senza la «v»).
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scarica il codice
+        uses: actions/checkout@v4
+
+      - name: Installa Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Controlla che il tag coincida con manifest.json
+        run: |
+          VERSIONE=$(node -p "require('./manifest.json').version")
+          if [ "$VERSIONE" != "${GITHUB_REF_NAME}" ]; then
+            echo "Il tag (${GITHUB_REF_NAME}) non coincide con la versione in manifest.json ($VERSIONE)."
+            exit 1
+          fi
+
+      - name: Installa le dipendenze
+        run: npm install
+
+      - name: Compila
+        run: npm run build
+
+      - name: Crea la release con i file del plugin
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            main.js manifest.json styles.css \
+            --title "${GITHUB_REF_NAME}" \
+            --notes "See [RELEASE_NOTES.md](https://github.com/${GITHUB_REPOSITORY}/blob/main/RELEASE_NOTES.md) and the version history in the README."
