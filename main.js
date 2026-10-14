@@ -5400,7 +5400,6 @@ var MainView = class extends import_obsidian.ItemView {
   }
 };
 function conTooltip(sl) {
-  if (!("getSettingDefinitions" in import_obsidian.PluginSettingTab.prototype)) sl.setDynamicTooltip();
   return sl;
 }
 var ARLSettingTab = class extends import_obsidian.PluginSettingTab {

@@ -88,7 +88,7 @@
 
 On first start the plugin creates the evaluation-set notes (in the language you selected) and the folders it needs.
 
-Requires Obsidian **1.7.2** or later.
+Requires Obsidian **1.13.0** or later.
 
 ## Quick start
 
@@ -578,6 +578,7 @@ The plugin follows [semantic versioning](https://semver.org/): *major.minor.patc
 
 | Version | Requires Obsidian | What changed |
 |---|---|---|
+| **1.0.3** | 1.13.0 | Minimum Obsidian version raised to 1.13.0, required by the settings API introduced in 1.0.2 (declared-API check of the Obsidian review). The old pre-1.13 settings fallback is no longer needed. No change to your notes or settings. |
 | **1.0.2** | 1.7.2 | Settings are now declared with Obsidian 1.13's settings API: from 1.13 the plugin options appear in Obsidian's settings search, one page per section (Virtual library, Reading bar, Stars…). Older versions keep the previous single settings page. The slider value is shown by Obsidian itself on 1.13+. |
 | **1.0.1** | 1.7.2 | Maintenance release after the Obsidian code review: CSS classes instead of inline styles for showing/hiding and static styling; default-language detection through Obsidian's own locale (`moment.locale()`); stricter typing of frontmatter updates, `instanceof TFile` checks and Obsidian DOM helpers (`createEl`, `createDiv`); unused code removed; `builtin-modules` replaced by Node's `module.builtinModules`; two CSS lint fixes. No change to your notes or settings. |
 | **1.0.0** | 1.7.2 | First public release. See below. |

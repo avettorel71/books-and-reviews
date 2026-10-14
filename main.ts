@@ -6335,9 +6335,8 @@ class MainView extends ItemView {
 /*  Impostazioni                                                      */
 /* ------------------------------------------------------------------ */
 
-/** Dalla 1.13 il valore è sempre mostrato accanto al cursore; nelle versioni precedenti serve il suggerimento. */
+/** Dalla 1.13 il valore è sempre mostrato accanto al cursore da Obsidian stesso. */
 function conTooltip(sl: SliderComponent): SliderComponent {
-	if (!("getSettingDefinitions" in PluginSettingTab.prototype)) sl.setDynamicTooltip();
 	return sl;
 }
 

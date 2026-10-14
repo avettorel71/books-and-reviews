@@ -1,3 +1,9 @@
+# Books and Reviews 1.0.3
+
+- Minimum Obsidian version is now **1.13.0** (needed by the declarative settings API used since 1.0.2). No other changes.
+
+---
+
 # Books and Reviews 1.0.2
 
 - Settings use Obsidian 1.13's declarative settings API: the options are searchable in Obsidian's settings search, organised in one page per section. Obsidian versions before 1.13 keep the previous settings screen unchanged.
