@@ -11,6 +11,8 @@ on:
 
 permissions:
   contents: write
+  id-token: write # firma dell'attestazione di provenienza
+  attestations: write
 
 jobs:
   release:
@@ -56,6 +58,15 @@ jobs:
       - name: Compila
         if: steps.ver.outputs.nuova == 'si'
         run: npm run build
+
+      - name: Attestazione di provenienza dei file della release
+        if: steps.ver.outputs.nuova == 'si'
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            main.js
+            manifest.json
+            styles.css
 
       - name: Crea la release (il tag è il numero di versione, senza «v»)
         if: steps.ver.outputs.nuova == 'si'

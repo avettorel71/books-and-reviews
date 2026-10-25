@@ -43,11 +43,15 @@ interface ARLSettings {
 	cartellaCopertine: string; // dove si salvano le copertine caricate dal computer
 	setPredefinitiCreati: boolean;
 	domandePerSchermata: number;
+	ultimoSet: string; // ultimo set scelto in «Valuta libro»
 	schermoPieno: boolean; // all'apertura nasconde le barre laterali di Obsidian
 	coloreBarra: string; // colore della barra di lettura (di partenza se sfumata)
 	coloreBarraFine: string; // colore di arrivo della barra sfumata
 	barraSfumata: boolean;
 	lingua: Lingua;
+	valuta: string; // codice della valuta dei prezzi (vedi VALUTE) o "altra"
+	valutaAltra: string; // simbolo libero, usato con valuta "altra"
+	simboloDopo: boolean; // true: 12,50 €; false: € 12,50
 	fontFamiglia: string; // "" = font del tema
 	fontDimensione: number; // px; 0 = dimensione del tema
 	coloreTesto: string; // "" = colore del tema
@@ -93,11 +97,15 @@ const DEFAULTS: ARLSettings = {
 	cartellaCopertine: "Libri/ARL/Copertine",
 	setPredefinitiCreati: false,
 	domandePerSchermata: 5,
+	ultimoSet: "",
 	schermoPieno: false,
 	coloreBarra: "#4caf50",
 	coloreBarraFine: "#2196f3",
 	barraSfumata: false,
 	lingua: "it",
+	valuta: "EUR",
+	valutaAltra: "",
+	simboloDopo: false,
 	fontFamiglia: "",
 	fontDimensione: 0,
 	coloreTesto: "",
@@ -257,22 +265,48 @@ function etichettaGiorni(n: number): string {
 }
 
 /** "9,90", "€ 9.90", "10" → numero; vuoto → null; non valido → NaN. */
+/** Valute proposte nelle opzioni: simbolo, nome e decimali. */
+const VALUTE: Record<string, { simbolo: string; nome: string; decimali: number }> = {
+	EUR: { simbolo: "€", nome: "Euro (EUR)", decimali: 2 },
+	USD: { simbolo: "$", nome: "Dollaro USA (USD)", decimali: 2 },
+	GBP: { simbolo: "£", nome: "Sterlina (GBP)", decimali: 2 },
+	JPY: { simbolo: "¥", nome: "Yen (JPY)", decimali: 0 },
+	CHF: { simbolo: "CHF", nome: "Franco svizzero (CHF)", decimali: 2 },
+	CAD: { simbolo: "CA$", nome: "Dollaro canadese (CAD)", decimali: 2 },
+	AUD: { simbolo: "A$", nome: "Dollaro australiano (AUD)", decimali: 2 },
+	CNY: { simbolo: "CN¥", nome: "Yuan cinese (CNY)", decimali: 2 },
+	INR: { simbolo: "₹", nome: "Rupia indiana (INR)", decimali: 2 },
+	BRL: { simbolo: "R$", nome: "Real brasiliano (BRL)", decimali: 2 },
+};
+/** Valuta corrente (impostata all'avvio e dalle opzioni). */
+let VALUTA: { simbolo: string; decimali: number; dopo: boolean } = { simbolo: "€", decimali: 2, dopo: false };
+
+function impostaValuta(st: { valuta: string; valutaAltra: string; simboloDopo: boolean }) {
+	const v = VALUTE[st.valuta];
+	VALUTA = v
+		? { simbolo: v.simbolo, decimali: v.decimali, dopo: st.simboloDopo }
+		: { simbolo: st.valutaAltra.trim() || "€", decimali: 2, dopo: st.simboloDopo };
+}
+
 function parsePrezzo(testo: string): number | null {
-	const t = testo.replace(/€/g, "").replace(/\s/g, "").replace(",", ".");
+	let t = testo.replace(/[€$£¥₹]/g, "");
+	if (VALUTA.simbolo) t = t.split(VALUTA.simbolo).join("");
+	t = t.replace(/\s/g, "").replace(",", ".");
 	if (t === "") return null;
 	if (!/^\d+(\.\d{1,2})?$/.test(t)) return NaN;
 	return Math.round(parseFloat(t) * 100) / 100;
 }
 
 function formatNumeroEuro(n: number): string {
-	return n.toLocaleString("it-IT", {
-		minimumFractionDigits: 2,
-		maximumFractionDigits: 2,
+	return n.toLocaleString(LINGUA === "en" ? "en-US" : "it-IT", {
+		minimumFractionDigits: VALUTA.decimali,
+		maximumFractionDigits: VALUTA.decimali,
 	});
 }
 
 function formatEuro(n: number): string {
-	return `€ ${formatNumeroEuro(n)}`;
+	const num = formatNumeroEuro(n);
+	return VALUTA.dopo ? `${num} ${VALUTA.simbolo}` : `${VALUTA.simbolo} ${num}`;
 }
 
 interface Scadenza {
@@ -1122,7 +1156,6 @@ const EN: Record<string, string> = {
 	"Facoltativo: premio o riconoscimento ricevuto dal libro.": "Optional: award or prize won by the book.",
 	"Fantascienza, Fantasy, Thriller…": "Sci-fi, Fantasy, Thriller…",
 	"Pagine totali": "Total pages",
-	"Prezzo (€)": "Price (€)",
 	"Copertina": "Cover",
 	"Immagine non trovata nel vault.": "Image not found in the vault.",
 	"Collegamento a un'immagine, per esempio [[Copertine/dune.jpg]].": "Link to an image, for example [[Covers/dune.jpg]].",
@@ -1348,6 +1381,12 @@ const EN: Record<string, string> = {
 	"tutti i pesi sono zero": "all weights are zero",
 	"il file non è un'immagine supportata": "the file is not a supported image",
 	// opzioni
+	"Valuta dei prezzi": "Price currency",
+	"Simbolo usato per i prezzi dei libri. Cambia solo la visualizzazione: i numeri nelle note restano gli stessi, senza conversione.": "Symbol used for book prices. It only changes the display: the numbers in your notes stay the same, with no conversion.",
+	"Anteprima": "Preview",
+	"Simbolo dopo l'importo": "Symbol after the amount",
+	"Attivo: 12,50 €. Disattivo: € 12,50.": "On: 12.50 €. Off: € 12.50.",
+	"Altra…": "Other…",
 	"Lingua / Language": "Lingua / Language",
 	"Lingua dell'interfaccia": "Interface language",
 	"Lingua dei menu e dei messaggi del plugin. Non modifica i tuoi set né le note già scritte.": "Language of the plugin's menus and messages. It does not change your sets or notes already written.",
@@ -1493,6 +1532,7 @@ const REGOLE: [RegExp, (m: RegExpMatchArray) => string][] = [
 	[/^(\d+) su (\d+) stelle$/, (m) => `${m[1]} of ${m[2]} stars`],
 	[/^Codice (\d+)$/, (m) => `Code ${m[1]}`],
 	[/^Set di valutazione: (.+)$/, (m) => `Evaluation set: ${m[1]}`],
+	[/^Prezzo \((.+)\)$/, (m) => `Price (${m[1]})`],
 	[/^Prezzo: (.+)$/, (m) => `Price: ${m[1]}`],
 	[/^Premio: (.+)$/, (m) => `Award: ${m[1]}`],
 	[/^Restituzione: (.+) ·$/, (m) => `Return date: ${m[1]} ·`],
@@ -2005,6 +2045,10 @@ export default class BooksAndReviewsPlugin extends Plugin {
 		s.altezzaCopertina = Math.min(600, Math.max(80, Math.round(Number(s.altezzaCopertina)) || DEFAULTS.altezzaCopertina));
 		s.lingua = s.lingua === "en" ? "en" : "it";
 		impostaLingua(s.lingua);
+		s.valuta = typeof s.valuta === "string" && (s.valuta in VALUTE || s.valuta === "altra") ? s.valuta : "EUR";
+		s.valutaAltra = typeof s.valutaAltra === "string" ? s.valutaAltra : "";
+		s.simboloDopo = s.simboloDopo === true;
+		impostaValuta(s);
 		delete (s as unknown as Record<string, unknown>).metodo; // le soglie ora sono nei set
 		if (!s.cartellaSet || !s.cartellaSet.trim()) s.cartellaSet = DEFAULTS.cartellaSet;
 		this.settings = s;
@@ -3023,7 +3067,7 @@ class BookFormView {
 					tocca();
 				});
 		});
-		new Setting(c).setName("Prezzo (€)").addText((t) =>
+		new Setting(c).setName(`Prezzo (${VALUTA.simbolo})`).addText((t) =>
 			t
 				.setPlaceholder("9,90")
 				.setValue(d.prezzo)
@@ -3217,7 +3261,10 @@ class ReviewView {
 	}
 
 	avvia() {
-		this.set = this.plugin.trovaSet(this.libro.set) ?? this.plugin.setIniziale();
+		this.set =
+			this.plugin.trovaSet(this.libro.set) ??
+			this.plugin.trovaSet(this.plugin.settings.ultimoSet) ??
+			this.plugin.setIniziale();
 		this.caricaLibro(this.libro);
 		this.costruisciPagine();
 		this.render();
@@ -3289,6 +3336,8 @@ class ReviewView {
 					const nuovo = this.plugin.trovaSet(v);
 					if (!nuovo) return;
 					this.set = nuovo;
+					this.plugin.settings.ultimoSet = nuovo.nome;
+					void this.plugin.salvaImpostazioni();
 					this.caricaLibro(libro);
 					rigaSet.setDesc(descrizioneSet(nuovo));
 					mostraLivelli();
@@ -6340,6 +6389,16 @@ function conTooltip(sl: SliderComponent): SliderComponent {
 	return sl;
 }
 
+function contenitoreScorrevole(da: HTMLElement): HTMLElement | null {
+	let e: HTMLElement | null = da;
+	while (e) {
+		const o = getComputedStyle(e).overflowY;
+		if ((o === "auto" || o === "scroll") && e.scrollHeight > e.clientHeight) return e;
+		e = e.parentElement;
+	}
+	return null;
+}
+
 class ARLSettingTab extends PluginSettingTab {
 	private fontAltro: boolean | undefined;
 
@@ -6347,39 +6406,8 @@ class ARLSettingTab extends PluginSettingTab {
 		super(app, plugin);
 	}
 
-	/** Ridisegna le opzioni mantenendo la posizione di scorrimento. */
-	display() {
-		const el = this.contenitoreScorrevole();
-		const top = el ? el.scrollTop : 0;
-		this.disegna();
-		if (el && top > 0) {
-			el.scrollTop = top;
-			window.requestAnimationFrame(() => {
-				el.scrollTop = top;
-			});
-		}
-	}
-
-	private contenitoreScorrevole(): HTMLElement | null {
-		let e: HTMLElement | null = this.containerEl;
-		while (e) {
-			const o = getComputedStyle(e).overflowY;
-			if ((o === "auto" || o === "scroll") && e.scrollHeight > e.clientHeight) return e;
-			e = e.parentElement;
-		}
-		return null;
-	}
-
-	private disegna() {
-		const { containerEl } = this;
-		containerEl.empty();
-		collegaTraduzione(containerEl);
-		for (const sez of this.sezioni()) sez.disegna(containerEl, () => this.display());
-	}
-
 	/**
-	 * Obsidian 1.13+: le opzioni compaiono nella ricerca delle impostazioni, una pagina per sezione.
-	 * Il contenuto di ogni pagina è lo stesso di display(), che resta per le versioni precedenti.
+	 * Le opzioni compaiono nella ricerca delle impostazioni, una pagina per sezione.
 	 */
 	getSettingDefinitions(): SettingDefinitionItem[] {
 		return this.sezioni().map((sez) => ({
@@ -6389,14 +6417,25 @@ class ARLSettingTab extends PluginSettingTab {
 		}));
 	}
 
-	/** La classe di base esiste solo dalla 1.13: si definisce al momento dell'uso, non al caricamento. */
 	private creaPagina(nome: string, disegna: (c: HTMLElement, rinnova: () => void) => void): SettingPage {
 		class PaginaOpzioni extends SettingPage {
 			display() {
 				this.title = tr(nome);
-				this.containerEl.empty();
 				collegaTraduzione(this.containerEl);
-				disegna(this.containerEl, () => this.display());
+				this.disegnaContenuto();
+			}
+			/** Ridisegna la pagina mantenendo la posizione di scorrimento. */
+			private disegnaContenuto() {
+				const el = contenitoreScorrevole(this.containerEl);
+				const top = el ? el.scrollTop : 0;
+				this.containerEl.empty();
+				disegna(this.containerEl, () => this.disegnaContenuto());
+				if (el && top > 0) {
+					el.scrollTop = top;
+					window.requestAnimationFrame(() => {
+						el.scrollTop = top;
+					});
+				}
 			}
 			hide() {
 				scollegaTraduzione(this.containerEl);
@@ -6425,7 +6464,55 @@ class ARLSettingTab extends PluginSettingTab {
 								await this.plugin.salvaImpostazioni();
 								await this.plugin.scriviSetPredefiniti(false);
 								await this.plugin.caricaSet();
+								rinnova();
 							})
+					);
+
+				const anteprimaValuta = new Setting(containerEl)
+					.setName("Valuta dei prezzi")
+					.setDesc("Simbolo usato per i prezzi dei libri. Cambia solo la visualizzazione: i numeri nelle note restano gli stessi, senza conversione.");
+				const aggiornaAnteprima = () => {
+					impostaValuta(s);
+					anteprimaValuta.setDesc(
+						`${tr("Simbolo usato per i prezzi dei libri. Cambia solo la visualizzazione: i numeri nelle note restano gli stessi, senza conversione.")} ${tr("Anteprima")}: ${formatEuro(12.5)}`
+					);
+				};
+				anteprimaValuta.addDropdown((d) => {
+					const opzioni: Record<string, string> = {};
+					for (const [k, v] of Object.entries(VALUTE)) opzioni[k] = `${v.simbolo} ${v.nome}`;
+					opzioni.altra = "Altra…";
+					d.addOptions(opzioni)
+						.setValue(s.valuta)
+						.onChange(async (v) => {
+							s.valuta = v;
+							aggiornaAnteprima();
+							await this.plugin.salvaImpostazioni();
+							rinnova();
+						});
+				});
+				if (s.valuta === "altra") {
+					anteprimaValuta.addText((t) =>
+						t
+							.setPlaceholder("R$")
+							.setValue(s.valutaAltra)
+							.onChange(async (v) => {
+								s.valutaAltra = v;
+								aggiornaAnteprima();
+								await this.plugin.salvaImpostazioni();
+							})
+					);
+				}
+				aggiornaAnteprima();
+
+				new Setting(containerEl)
+					.setName("Simbolo dopo l'importo")
+					.setDesc("Attivo: 12,50 €. Disattivo: € 12,50.")
+					.addToggle((tg) =>
+						tg.setValue(s.simboloDopo).onChange(async (v) => {
+							s.simboloDopo = v;
+							aggiornaAnteprima();
+							await this.plugin.salvaImpostazioni();
+						})
 					);
 
 				new Setting(containerEl)

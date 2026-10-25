@@ -1,3 +1,11 @@
+# Books and Reviews 1.0.4
+
+- «Rate book» remembers the last rating set you chose and preselects it for the next book (books already rated keep their own set).
+- New **Price currency** option (Settings › General): Euro (default), USD, GBP, JPY, CHF, CAD, AUD, CNY, INR, BRL or a custom symbol, placed before or after the amount. Number format follows the interface language (Italian default: € 12,50). Display only, no conversion; yen shows no decimals.
+- Obsidian review fixes: the settings tab no longer uses the deprecated `display()` (each page re-renders itself, keeping the scroll position); the release workflow publishes GitHub artifact attestations for `main.js`, `manifest.json` and `styles.css`.
+
+---
+
 # Books and Reviews 1.0.3
 
 - Minimum Obsidian version is now **1.13.0** (needed by the declarative settings API used since 1.0.2). No other changes.
