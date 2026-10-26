@@ -1,3 +1,13 @@
+# Books and Reviews 1.0.5
+
+- New **Goals** feature (button after *Evaluation sets*, also a command): goals for pages read (counted day by day from your reading logs), books finished and reading days, per day, week, month or year, with an optional genre filter.
+- Medals (bronze, silver, gold, trophy), streak, milestones, a celebration window with fireworks and the Goal sound (both optional).
+- **Records** tab: pages today / week / month / year, averages and record day; longest and shortest book; 1st, 2nd and 3rd most read genre; most expensive book; most stars; highest and lowest ARL.
+- Click a medal in the **Medals** tab to see which goals earned it: period, goal name and details, date and time, result. Medals stay explained even if the goal is later deleted or changed.
+- Nothing runs in the background: progress is computed only when a book changes or when you open the window. Settings section *Goals* to switch everything off.
+
+---
+
 # Books and Reviews 1.0.4
 
 - «Rate book» remembers the last rating set you chose and preselects it for the next book (books already rated keep their own set).

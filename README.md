@@ -39,6 +39,16 @@
   - [Saved arrangements](#saved-arrangements)
   - [Sorting buttons](#sorting-buttons)
   - [Virtual library options](#virtual-library-options)
+- [Goals](#goals)
+  - [Where to find it](#where-to-find-it)
+  - [Creating and editing a goal](#creating-and-editing-a-goal)
+  - [How progress is counted](#how-progress-is-counted)
+  - [The window: Today · Week · Month · Year](#the-window-today--week--month--year)
+  - [Medals, streak and milestones](#medals-streak-and-milestones)
+  - [Celebration](#celebration)
+  - [Records tab](#records-tab)
+  - [Manage menu](#manage-menu)
+  - [Light by design](#light-by-design)
 - [Navigation](#navigation)
 - [Book details](#book-details)
 - [Reading progress, bar and chart](#reading-progress-bar-and-chart)
@@ -69,6 +79,7 @@
 - **Live ARL and stars** while you answer, and a coloured bar that highlights the **current question** (colours configurable).
 - **Library list** with live search, status filter, sortable columns, configurable and re-orderable columns, sticky header and footer, exact scroll restoration, totals.
 - **Image gallery** per book (thumbnails, actual-size viewer, optional **captions**), **characters**, **quotes/annotations**, **awards**, **price**, **return date** (loans), **covers** (from the vault, from your computer, or by link).
+- **Goals**: reading goals per day, week, month or year (pages read, books finished, reading days) with medals, streaks and a celebration, plus a **Records** tab (longest/shortest book, top 3 genres, most expensive, most stars, highest and lowest ARL).
 - **Library information window**: statistics on the whole library (longest/shortest books, reading periods, breaks between books, books per star rating and per genre…).
 - **Full appearance control**: language, font family/size/colour, interface width, cover height, bar thickness and colours, chart style.
 - Works on desktop and mobile (`isDesktopOnly: false`).
@@ -277,7 +288,7 @@ Existing sets without a `colori` line keep working with the default palette; the
 - **Configurable columns** (*Settings → List columns*): show/hide and **drag to reorder**. *Title* and *Author* are always visible. Available columns: Code, Title, Author, Publisher, Genre, Set, Pages, Price, Reading dates, Days, ARL, Rating (stars), Return, Time elapsed (days between the end of the previous book and the start of this one; hover to see the previous book), Award.
 - ARL values are coloured by score band.
 - The **Rate book** page uses the same list, with books still to be rated first.
-- The toolbar at the top of the plugin reads: **New book · Library · Virtual library · Library information · Rate book · Evaluation sets**.
+- The toolbar at the top of the plugin reads: **New book · Library · Virtual library · Library information · Rate book · Evaluation sets · Goals**.
 
 ![The Library information window: statistics on the whole library on two columns](screenshots/Screenshot25.jpg)
 
@@ -385,6 +396,88 @@ Code: [ ↓ ] [ ↑ ]  │  Reading: [ ↓ ] [ ↑ ]  │  Pages: [ ↓ ] [ ↑ 
 
 ---
 
+## Goals
+
+Goals turn reading into a small game: you decide how much you want to read, the plugin counts for you, and when you get there you earn a medal and a celebration. Everything is computed from the readings and dates already stored in your book notes, so there is nothing extra to fill in.
+
+![The Goals window](screenshots/Screenshot33.jpg)
+
+*The Goals window*
+
+### Where to find it
+
+- The **Goals** button in the toolbar, right after *Evaluation sets*. Next to the label it shows today's counter (for example `1/2`, or `✓ 2/2` when all of today's goals are done).
+- The command **Goals** in the command palette.
+- *Settings → Goals* lets you turn the whole feature off, hide the counter, and switch the celebration window and sound on or off. With goals off the button disappears and nothing is calculated.
+
+### Creating and editing a goal
+
+Press **New goal** (top left of the window). A goal is defined by:
+
+| Field | Meaning |
+|---|---|
+| **Name** (optional) | Your own title. If left empty the plugin writes one for you, such as *Pages read: 30 per day*. |
+| **What** | **Pages read**, **Books finished** or **Reading days** (days on which you logged at least one reading). |
+| **How many** | The target number (from 1 to 9,999,999). The question adapts: *How many pages / books / days?* |
+| **Period** | **Day**, **Week** (ISO, starting on Monday), **Month** or **Year**. Each period restarts from zero by itself: the same goals are there again the next day, week, month or year. |
+| **Genre** (optional) | Count only books of one genre, for example *30 pages per day of Novels*. |
+
+A live preview shows the name the goal will have. Examples: *30 pages per day*, *600 pages per month*, *8,000 pages per year*, *1 book per week*, *5 reading days per week*.
+
+On each goal row you can **edit** (pencil) or **delete** (bin: press twice within three seconds, to avoid deleting by mistake).
+
+### How progress is counted
+
+- **Pages read** are counted **day by day** from the readings you log in each book (the *from page – to page* rows of the reading progress). Reading pages 10 to 20 counts 11 pages, on the date of that reading. Pages of several books read on the same day are added together.
+- **Books finished** are counted on the book's **end date**.
+- **Reading days** count the different days with at least one logged reading.
+- Only the current period is checked: if you backfill a reading dated in the past, it counts for that past period's statistics but does not award a medal retroactively.
+- The check runs by itself a moment after you save a reading, an end date or a rating (several changes in a row are grouped into one check), and every time you open the Goals window.
+
+### The window: Today · Week · Month · Year
+
+Each tab lists the goals of that period:
+
+- a tick (done) or an empty circle, the **name**, the details (what, target, genre) and a **progress bar**;
+- the count (`40/30`) and the medal of the period, dimmed until you earn it;
+- at the top, on *Today*: *Today: 1 of 2 completed* and your current **streak**; on the other tabs: how many days are left in the period.
+
+### Medals, streak and milestones
+
+- **Medals**: bronze for a daily goal, silver for a weekly one, gold for a monthly one and a trophy for a yearly one. A medal is earned once per goal and per period.
+- The **Medals** tab shows four tiles with the number you have won. **Click a tile** (only when you have won at least one) to see the list, newest first. Each line shows the **period** (for example *October 2026* or *Week 43 · 19/10/2026 – 25/10/2026*), the **name and details of the goal** that earned it, **when it was reached** (date and time) and the **result** (for example *640 pages of 600*). Click the tile again to close the list.
+- **Medals stay even if you delete or change a goal.** When a medal is earned the plugin keeps a copy of the goal (name, what, target, genre), so the line still explains it afterwards and is marked *Goal deleted*. Medals earned before this copy existed use the goal's current name if it still exists, otherwise they show *Goal no longer available* with the date.
+- **Streak**: consecutive days, up to today, in which at least one daily goal was completed. If you skip a day it restarts. The tab also shows your **best streak**. If today has no completed goal yet, the streak is counted up to yesterday.
+- **Milestones**: first goal completed, 10 and 100 goals completed, streaks of 3, 7 and 30 days. Locked ones show a padlock.
+
+### Celebration
+
+When a goal is reached a **celebration window** opens with fireworks, the medal of the longest period reached and the list of goals completed. A **sound** (the *Goal* jingle, bundled inside the plugin) plays at the same time. Press **Congratulations** (or Esc) to close it. If more goals are completed while it is open they are added to the same window. Both the window and the sound can be turned off in the settings; with *reduce motion* enabled in your system the fireworks show a single still burst.
+
+### Records tab
+
+Calculated on the whole library, with a **period filter** (*All*, or a single year based on the end date):
+
+| Block | What it shows |
+|---|---|
+| **Pages read** (whole library) | Today, this week, this month, this year and total; the **average per reading day** and **per reading month**; the **record day** (date and pages). |
+| **Books** | The book with the **most pages** and the one with the **fewest**; the **most read genre**, the **second** and the **third**, with the number of books; the **most expensive book** (in your chosen currency); the book with the **most stars**; the book with the **highest ARL score**; the **worst book** (lowest ARL score). |
+
+Records are calculated on books you have read (with an end date, or already rated). When several books tie, the titles are listed together (the first three, then *+N*).
+
+### Manage menu
+
+The **Manage** button (bottom left) offers, always with a confirmation:
+
+- delete the goals of the current tab;
+- delete all goals (earned medals stay);
+- reset medals and streak (your goals stay; goals already reached in the current period are not awarded again);
+- reset everything.
+
+### Light by design
+
+There is **no background process and no timer**. Progress is computed only when a book changes or when you open the window, straight from your notes. The only data saved (in the plugin's `data.json`, not in your notes) are the goals, the earned medals and a small copy of each rewarded goal. In English the whole feature is translated, like the rest of the plugin.
+
 ## Navigation
 
 Every screen reached from the library has a clearly visible **← Back** button in the top left corner (detail page, image gallery, choice of the set). On the questionnaire the **Back** and **Next** buttons sit at the bottom. **Esc** goes back or closes dialogs without leaving the plugin.
@@ -480,6 +573,7 @@ Set a **return date** and the plugin tracks it: the list and the detail show *ti
 | Section | Options |
 |---|---|
 | **General** | Interface **language** (English / Italian) · **Price currency** (Euro, USD, GBP, JPY, CHF… or a custom symbol, before/after the amount; default Euro) · **Save folder** for books · **Evaluation sets folder** · **Covers folder** · **Questions per screen** (1/2/5/10) · **Live ARL and stars** (shows the score and stars at the top right while you answer, updating at every answer) · **Highlight the question** (on/off, background colour, text colour, preview) · **Open full screen** (hides the Obsidian sidebars while the plugin is open, restores them on exit) · **Interface width** (600–2400 px, or full width) |
+| **Goals** | Enable goals (shows/hides the button and stops all calculation) · counter on the button · celebration window · celebration sound |
 | **List totals bar** | Toggle each item: books and total price, books per star rating, most pages, fewest pages, genres read |
 | **List columns** | Show/hide and drag-to-reorder every column |
 | **Text** | **Font** family (theme default or a list of fonts) · **Font size** · **Text colour** |
@@ -555,6 +649,7 @@ All available from the command palette:
 - **Virtual library**
 - **Rate book**
 - **Evaluation sets**
+- **Goals**
 
 (and the ribbon book icon).
 
@@ -578,6 +673,7 @@ The plugin follows [semantic versioning](https://semver.org/): *major.minor.patc
 
 | Version | Requires Obsidian | What changed |
 |---|---|---|
+| **1.0.5** | 1.13.0 | New **Goals** feature: pages read per day/week/month/year (counted day by day from your reading logs), books finished and reading days, optional genre filter; bronze/silver/gold/trophy medals, streaks, milestones, celebration with fireworks and sound; **Records** tab with longest/shortest book, top 3 genres, most expensive, most stars, highest and lowest ARL. New Goals button after *Evaluation sets*, command and settings section. |
 | **1.0.4** | 1.13.0 | «Rate book» now remembers the last rating set you chose and preselects it for the next book, instead of falling back to the default set. New **Price currency** option (Settings › General): Euro, US dollar, pound, yen, Swiss franc and more, or any symbol of your own, with the symbol before or after the amount. Default: Euro, symbol before (€ 12,50). Only the display changes; prices in your notes stay plain numbers. Review-bot fixes: settings no longer use the deprecated `display()` method (pages refresh themselves), and release files now carry GitHub build-provenance attestations. |
 | **1.0.3** | 1.13.0 | Minimum Obsidian version raised to 1.13.0, required by the settings API introduced in 1.0.2 (declared-API check of the Obsidian review). The old pre-1.13 settings fallback is no longer needed. No change to your notes or settings. |
 | **1.0.2** | 1.7.2 | Settings are now declared with Obsidian 1.13's settings API: from 1.13 the plugin options appear in Obsidian's settings search, one page per section (Virtual library, Reading bar, Stars…). Older versions keep the previous single settings page. The slider value is shown by Obsidian itself on 1.13+. |
