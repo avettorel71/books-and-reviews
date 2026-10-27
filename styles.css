@@ -1444,3 +1444,7 @@
 	font-size: var(--font-ui-smaller);
 	text-transform: capitalize;
 }
+.arl-festa-quando {
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}

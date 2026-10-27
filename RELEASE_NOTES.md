@@ -1,3 +1,15 @@
+# Books and Reviews 1.0.6
+
+Maintenance release: code-quality fixes from the Obsidian review.
+
+- Fireworks of the Goals celebration: `requestAnimationFrame` / `cancelAnimationFrame` are now called on `window`, for correct behaviour in pop-out windows.
+- Confirmation button in the Goals window: `setDestructive()` replaces the deprecated `setWarning()`.
+- **Goals: late entries.** A reading logged after the day (up to 7 days late by default, 0–30 in *Settings → Goals → Grace days*) now earns the medal of the day, week, month or year it belongs to, instead of being ignored. The celebration names that period. Pages stay on their real day, so numbers and streak stay exact.
+- A new goal counts only from its creation day (earlier periods never give medals).
+- No change to your notes.
+
+---
+
 # Books and Reviews 1.0.5
 
 - New **Goals** feature (button after *Evaluation sets*, also a command): goals for pages read (counted day by day from your reading logs), books finished and reading days, per day, week, month or year, with an optional genre filter.

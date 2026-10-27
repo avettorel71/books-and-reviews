@@ -408,7 +408,7 @@ Goals turn reading into a small game: you decide how much you want to read, the 
 
 - The **Goals** button in the toolbar, right after *Evaluation sets*. Next to the label it shows today's counter (for example `1/2`, or `✓ 2/2` when all of today's goals are done).
 - The command **Goals** in the command palette.
-- *Settings → Goals* lets you turn the whole feature off, hide the counter, and switch the celebration window and sound on or off. With goals off the button disappears and nothing is calculated.
+- *Settings → Goals* lets you turn the whole feature off, hide the counter, switch the celebration window and sound on or off, and set the **grace days** for late entries. With goals off the button disappears and nothing is calculated.
 
 ### Creating and editing a goal
 
@@ -431,7 +431,8 @@ On each goal row you can **edit** (pencil) or **delete** (bin: press twice withi
 - **Pages read** are counted **day by day** from the readings you log in each book (the *from page – to page* rows of the reading progress). Reading pages 10 to 20 counts 11 pages, on the date of that reading. Pages of several books read on the same day are added together.
 - **Books finished** are counted on the book's **end date**.
 - **Reading days** count the different days with at least one logged reading.
-- Only the current period is checked: if you backfill a reading dated in the past, it counts for that past period's statistics but does not award a medal retroactively.
+- **Late entries still earn the medal.** If you log yesterday's reading today, the medal goes to *yesterday* (the pages stay on their own day, so your numbers are exact and the streak is rebuilt). A period that ended no more than the **grace days** ago (default 7, adjustable from 0 to 30 in *Settings → Goals*) is still checked, as well as the current one; older periods are never awarded, so correcting old readings does not rain down past medals. The same applies to weeks, months and years (for example the 600 pages of a month completed on the 31st and logged on the 2nd still give the medal of that month).
+- **A new goal counts only from the day you create it**: periods that ended before its creation never give a medal, so creating *30 pages per day* today does not award the previous days. Goals created before this rule have no such limit.
 - The check runs by itself a moment after you save a reading, an end date or a rating (several changes in a row are grouped into one check), and every time you open the Goals window.
 
 ### The window: Today · Week · Month · Year
@@ -452,7 +453,7 @@ Each tab lists the goals of that period:
 
 ### Celebration
 
-When a goal is reached a **celebration window** opens with fireworks, the medal of the longest period reached and the list of goals completed. A **sound** (the *Goal* jingle, bundled inside the plugin) plays at the same time. Press **Congratulations** (or Esc) to close it. If more goals are completed while it is open they are added to the same window. Both the window and the sound can be turned off in the settings; with *reduce motion* enabled in your system the fireworks show a single still burst.
+When a goal is reached a **celebration window** opens with fireworks, the medal of the longest period reached and the list of goals completed (a goal earned for a past period, such as yesterday's reading logged today, shows that period in brackets). A **sound** (the *Goal* jingle, bundled inside the plugin) plays at the same time. Press **Congratulations** (or Esc) to close it. If more goals are completed while it is open they are added to the same window. Both the window and the sound can be turned off in the settings; with *reduce motion* enabled in your system the fireworks show a single still burst.
 
 ### Records tab
 
@@ -573,7 +574,7 @@ Set a **return date** and the plugin tracks it: the list and the detail show *ti
 | Section | Options |
 |---|---|
 | **General** | Interface **language** (English / Italian) · **Price currency** (Euro, USD, GBP, JPY, CHF… or a custom symbol, before/after the amount; default Euro) · **Save folder** for books · **Evaluation sets folder** · **Covers folder** · **Questions per screen** (1/2/5/10) · **Live ARL and stars** (shows the score and stars at the top right while you answer, updating at every answer) · **Highlight the question** (on/off, background colour, text colour, preview) · **Open full screen** (hides the Obsidian sidebars while the plugin is open, restores them on exit) · **Interface width** (600–2400 px, or full width) |
-| **Goals** | Enable goals (shows/hides the button and stops all calculation) · counter on the button · celebration window · celebration sound |
+| **Goals** | Enable goals (shows/hides the button and stops all calculation) · counter on the button · celebration window · celebration sound · grace days for late entries (0–30, default 7) |
 | **List totals bar** | Toggle each item: books and total price, books per star rating, most pages, fewest pages, genres read |
 | **List columns** | Show/hide and drag-to-reorder every column |
 | **Text** | **Font** family (theme default or a list of fonts) · **Font size** · **Text colour** |
@@ -669,16 +670,17 @@ The bundled sets in `sets/` are embedded into `main.js` at build time (esbuild t
 
 ## Version history
 
-The plugin follows [semantic versioning](https://semver.org/): *major.minor.patch*. Every version is a GitHub release with `main.js`, `manifest.json` and `styles.css`. The same notes are in [RELEASE_NOTES.md](RELEASE_NOTES.md).
+The plugin follows [semantic versioning](https://semver.org/): *major.minor.patch*. Every version is a GitHub release with `main.js`, `manifest.json` and `styles.css`. The complete, detailed notes of every release are in **[RELEASE_NOTES.md](RELEASE_NOTES.md)**; the *Details* column links straight to each version.
 
-| Version | Requires Obsidian | What changed |
-|---|---|---|
-| **1.0.5** | 1.13.0 | New **Goals** feature: pages read per day/week/month/year (counted day by day from your reading logs), books finished and reading days, optional genre filter; bronze/silver/gold/trophy medals, streaks, milestones, celebration with fireworks and sound; **Records** tab with longest/shortest book, top 3 genres, most expensive, most stars, highest and lowest ARL. New Goals button after *Evaluation sets*, command and settings section. |
-| **1.0.4** | 1.13.0 | «Rate book» now remembers the last rating set you chose and preselects it for the next book, instead of falling back to the default set. New **Price currency** option (Settings › General): Euro, US dollar, pound, yen, Swiss franc and more, or any symbol of your own, with the symbol before or after the amount. Default: Euro, symbol before (€ 12,50). Only the display changes; prices in your notes stay plain numbers. Review-bot fixes: settings no longer use the deprecated `display()` method (pages refresh themselves), and release files now carry GitHub build-provenance attestations. |
-| **1.0.3** | 1.13.0 | Minimum Obsidian version raised to 1.13.0, required by the settings API introduced in 1.0.2 (declared-API check of the Obsidian review). The old pre-1.13 settings fallback is no longer needed. No change to your notes or settings. |
-| **1.0.2** | 1.7.2 | Settings are now declared with Obsidian 1.13's settings API: from 1.13 the plugin options appear in Obsidian's settings search, one page per section (Virtual library, Reading bar, Stars…). Older versions keep the previous single settings page. The slider value is shown by Obsidian itself on 1.13+. |
-| **1.0.1** | 1.7.2 | Maintenance release after the Obsidian code review: CSS classes instead of inline styles for showing/hiding and static styling; default-language detection through Obsidian's own locale (`moment.locale()`); stricter typing of frontmatter updates, `instanceof TFile` checks and Obsidian DOM helpers (`createEl`, `createDiv`); unused code removed; `builtin-modules` replaced by Node's `module.builtinModules`; two CSS lint fixes. No change to your notes or settings. |
-| **1.0.0** | 1.7.2 | First public release. See below. |
+| Version | Requires Obsidian | What changed | Details |
+|---|---|---|---|
+| **1.0.6** | 1.13.0 | Obsidian review clean-up: the fireworks animation now uses `window.requestAnimationFrame` / `window.cancelAnimationFrame`, so it also works in pop-out windows; the confirmation button of the Goals window uses the new `setDestructive()` instead of the deprecated `setWarning()`. **Goals, late entries:** a reading logged the next day (or up to 7 days late, adjustable) now earns the medal of the day, week, month or year it belongs to, with a celebration that names that period; new goals count only from their creation day. No change to your notes.  [Release notes 1.0.6](RELEASE_NOTES.md#books-and-reviews-106) |
+| **1.0.5** | 1.13.0 | New **Goals** feature: pages read per day/week/month/year (counted day by day from your reading logs), books finished and reading days, optional genre filter; bronze/silver/gold/trophy medals, streaks, milestones, celebration with fireworks and sound; **Records** tab with longest/shortest book, top 3 genres, most expensive, most stars, highest and lowest ARL. New Goals button after *Evaluation sets*, command and settings section.  [Release notes 1.0.5](RELEASE_NOTES.md#books-and-reviews-105) |
+| **1.0.4** | 1.13.0 | «Rate book» now remembers the last rating set you chose and preselects it for the next book, instead of falling back to the default set. New **Price currency** option (Settings › General): Euro, US dollar, pound, yen, Swiss franc and more, or any symbol of your own, with the symbol before or after the amount. Default: Euro, symbol before (€ 12,50). Only the display changes; prices in your notes stay plain numbers. Review-bot fixes: settings no longer use the deprecated `display()` method (pages refresh themselves), and release files now carry GitHub build-provenance attestations.  [Release notes 1.0.4](RELEASE_NOTES.md#books-and-reviews-104) |
+| **1.0.3** | 1.13.0 | Minimum Obsidian version raised to 1.13.0, required by the settings API introduced in 1.0.2 (declared-API check of the Obsidian review). The old pre-1.13 settings fallback is no longer needed. No change to your notes or settings.  [Release notes 1.0.3](RELEASE_NOTES.md#books-and-reviews-103) |
+| **1.0.2** | 1.7.2 | Settings are now declared with Obsidian 1.13's settings API: from 1.13 the plugin options appear in Obsidian's settings search, one page per section (Virtual library, Reading bar, Stars…). Older versions keep the previous single settings page. The slider value is shown by Obsidian itself on 1.13+.  [Release notes 1.0.2](RELEASE_NOTES.md#books-and-reviews-102) |
+| **1.0.1** | 1.7.2 | Maintenance release after the Obsidian code review: CSS classes instead of inline styles for showing/hiding and static styling; default-language detection through Obsidian's own locale (`moment.locale()`); stricter typing of frontmatter updates, `instanceof TFile` checks and Obsidian DOM helpers (`createEl`, `createDiv`); unused code removed; `builtin-modules` replaced by Node's `module.builtinModules`; two CSS lint fixes. No change to your notes or settings.  [Release notes 1.0.1](RELEASE_NOTES.md#books-and-reviews-101) |
+| **1.0.0** | 1.7.2 | First public release. See below.  [Release notes 1.0.0](RELEASE_NOTES.md#books-and-reviews-100) |
 
 ### 1.0.0 in detail
 

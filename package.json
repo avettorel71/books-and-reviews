@@ -1,6 +1,6 @@
 {
 	"name": "books-and-reviews",
-	"version": "1.0.5",
+	"version": "1.0.6",
 	"description": "Obsidian plugin: Books and Reviews",
 	"main": "main.js",
 	"scripts": {

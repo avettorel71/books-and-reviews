@@ -50,6 +50,7 @@ var DEFAULTS = {
   obiettiviContatore: true,
   obiettiviFesta: true,
   obiettiviSuono: true,
+  obiettiviTolleranza: 7,
   obiettivi: { obiettivi: [], premi: {}, copie: {} },
   schermoPieno: false,
   coloreBarra: "#4caf50",
@@ -1253,7 +1254,9 @@ var EN = {
   "Trofei \xB7 anni": "Trophies \xB7 years",
   "Obiettivo non pi\xF9 disponibile": "Goal no longer available",
   "Obiettivo eliminato": "Goal deleted",
-  "Clicca una medaglia per vedere gli obiettivi che l'hanno data.": "Click a medal to see the goals that earned it."
+  "Clicca una medaglia per vedere gli obiettivi che l'hanno data.": "Click a medal to see the goals that earned it.",
+  "Giorni di tolleranza": "Grace days",
+  "Se inserisci una lettura in ritardo, un periodo finito da non pi\xF9 di questi giorni d\xE0 ancora la medaglia (0 = solo il periodo in corso).": "If you log a reading late, a period that ended no more than this many days ago still earns the medal (0 = current period only)."
 };
 var UNITA = {
   giorno: ["day", "days"],
@@ -1781,6 +1784,7 @@ var BooksAndReviewsPlugin = class extends import_obsidian.Plugin {
     s.obiettiviContatore = s.obiettiviContatore !== false;
     s.obiettiviFesta = s.obiettiviFesta !== false;
     s.obiettiviSuono = s.obiettiviSuono !== false;
+    s.obiettiviTolleranza = Number.isFinite(Number(s.obiettiviTolleranza)) ? Math.min(30, Math.max(0, Math.round(Number(s.obiettiviTolleranza)))) : 7;
     s.obiettivi = normalizzaObiettivi(d.obiettivi);
     impostaValuta(s);
     delete s.metodo;
@@ -2025,12 +2029,12 @@ var BooksAndReviewsPlugin = class extends import_obsidian.Plugin {
   controllaObiettiviOra() {
     const st = this.settings;
     if (!st.obiettiviAttivi || st.obiettivi.obiettivi.length === 0) return;
-    const premiati = valutaObiettivi(st.obiettivi, this.tuttiILibri(), Date.now());
+    const premiati = valutaObiettivi(st.obiettivi, this.tuttiILibri(), Date.now(), st.obiettiviTolleranza);
     if (premiati.length === 0) return;
     void this.salvaImpostazioni();
     this.aggiornaObiettiviVista();
     if (st.obiettiviFesta) {
-      const voci = premiati.map((p) => ({ nome: this.nomeObiettivo(p.ob), periodo: p.ob.periodo }));
+      const voci = premiati.map((p) => ({ nome: this.nomeObiettivo(p.ob), periodo: p.ob.periodo, quando: p.passato ? etichettaPeriodoOb(p.chiavePeriodo, p.ob.periodo) : "" }));
       if (this.festa) this.festa.aggiungi(voci);
       else {
         this.festa = new FestaObiettiviModal(this.app, voci, () => this.festa = null);
@@ -2056,7 +2060,7 @@ var BooksAndReviewsPlugin = class extends import_obsidian.Plugin {
     await this.salvaObiettivi(periodo ? this.settings.obiettivi.obiettivi.filter((o) => o.periodo !== periodo) : []);
   }
   async azzeraMedaglie() {
-    azzeraPremi(this.settings.obiettivi, this.tuttiILibri(), Date.now());
+    azzeraPremi(this.settings.obiettivi, this.tuttiILibri(), Date.now(), this.settings.obiettiviTolleranza);
     await this.salvaImpostazioni();
     this.aggiornaObiettiviVista();
   }
@@ -2578,27 +2582,52 @@ function progressoObiettivo(ob, r, libri) {
   }
   return ob.azione === "pagine" ? pagine : giorni.size;
 }
-function valutaObiettivi(stato, libri, ora) {
+function periodiValutabili(ob, ora, tolleranza) {
+  const visti = /* @__PURE__ */ new Map();
+  for (let i = 0; i <= tolleranza; i++) {
+    const d = new Date(ora);
+    const r = intervalloOb(ob.periodo, new Date(d.getFullYear(), d.getMonth(), d.getDate() - i, 12).getTime());
+    if (ob.creato && r.ultimoGiorno < ob.creato) continue;
+    visti.set(r.chiave, r);
+  }
+  return [...visti.values()];
+}
+function valutaObiettivi(stato, libri, ora, tolleranza) {
   const premiati = [];
   for (const ob of stato.obiettivi) {
-    const r = intervalloOb(ob.periodo, ora);
-    const k = chiavePremio(ob.id, r.chiave);
-    if (k in stato.premi) continue;
-    if (progressoObiettivo(ob, r, libri) >= ob.target) {
-      stato.premi[k] = ora;
-      stato.copie[k] = { nome: ob.nome, azione: ob.azione, target: ob.target, genere: ob.genere };
-      premiati.push({ ob, chiavePeriodo: r.chiave });
+    const corrente = intervalloOb(ob.periodo, ora).chiave;
+    for (const r of periodiValutabili(ob, ora, tolleranza)) {
+      const k = chiavePremio(ob.id, r.chiave);
+      if (k in stato.premi) continue;
+      if (progressoObiettivo(ob, r, libri) >= ob.target) {
+        stato.premi[k] = ora;
+        stato.copie[k] = { nome: ob.nome, azione: ob.azione, target: ob.target, genere: ob.genere };
+        premiati.push({ ob, chiavePeriodo: r.chiave, passato: r.chiave !== corrente });
+      }
     }
   }
   return premiati;
 }
-function azzeraPremi(stato, libri, ora) {
+function azzeraPremi(stato, libri, ora, tolleranza) {
   stato.premi = {};
   stato.copie = {};
   for (const ob of stato.obiettivi) {
-    const r = intervalloOb(ob.periodo, ora);
-    if (progressoObiettivo(ob, r, libri) >= ob.target) stato.premi[chiavePremio(ob.id, r.chiave)] = 0;
+    for (const r of periodiValutabili(ob, ora, tolleranza)) {
+      if (progressoObiettivo(ob, r, libri) >= ob.target) stato.premi[chiavePremio(ob.id, r.chiave)] = 0;
+    }
   }
+}
+function etichettaPeriodoOb(chiave, periodo) {
+  const r = intervalloDaChiave(chiave, periodo);
+  if (!r) return chiave;
+  const lingua = LINGUA === "en" ? "en-GB" : "it-IT";
+  const dataBreve = (d) => d.toLocaleDateString(lingua, { day: "2-digit", month: "2-digit", year: "numeric" });
+  const primo = new Date(r.inizioMs);
+  const ultimo = new Date(r.fineMs - 1);
+  if (periodo === "day") return dataBreve(primo);
+  if (periodo === "week") return `Settimana ${Number(chiave.slice(-2))} \xB7 ${dataBreve(primo)} \u2013 ${dataBreve(ultimo)}`;
+  if (periodo === "month") return primo.toLocaleDateString(lingua, { month: "long", year: "numeric" });
+  return chiave;
 }
 function giornoPrima(chiave) {
   const [y, m, d] = chiave.split("-").map(Number);
@@ -2676,7 +2705,8 @@ function normalizzaObiettivi(raw) {
         azione: o.azione,
         periodo: o.periodo,
         target: Math.min(target, OB_MAX),
-        genere: typeof o.genere === "string" ? o.genere : ""
+        genere: typeof o.genere === "string" ? o.genere : "",
+        creato: typeof o.creato === "string" && /^\d{4}-\d{2}-\d{2}$/.test(o.creato) ? o.creato : ""
       });
     }
   }
@@ -2757,11 +2787,11 @@ var FuochiArtificio = class {
       return;
     }
     this.ultimo = performance.now();
-    this.raf = requestAnimationFrame((t) => this.fotogramma(t));
+    this.raf = window.requestAnimationFrame((t) => this.fotogramma(t));
   }
   ferma() {
     this.attivo = false;
-    cancelAnimationFrame(this.raf);
+    window.cancelAnimationFrame(this.raf);
     this.scintille = [];
     this.razzi = [];
   }
@@ -2788,7 +2818,7 @@ var FuochiArtificio = class {
       (_a = this.ctx) == null ? void 0 : _a.clearRect(0, 0, this.larghezza, this.altezza);
       return;
     }
-    this.raf = requestAnimationFrame((t) => this.fotogramma(t));
+    this.raf = window.requestAnimationFrame((t) => this.fotogramma(t));
   }
   scoppio(x, y, n, tinta = Math.floor(Math.random() * 360)) {
     const posto = FUOCHI_MAX_SCINTILLE - this.scintille.length;
@@ -2897,6 +2927,7 @@ var FestaObiettiviModal = class extends import_obsidian.Modal {
       const riga = this.elenco.createDiv({ cls: "arl-festa-voce" });
       iconaMedaglia(riga, v.periodo, "is-presa");
       riga.createSpan({ text: v.nome });
+      if (v.quando) riga.createSpan({ cls: "arl-festa-quando", text: `(${v.quando})` });
     }
   }
   onClose() {
@@ -2921,7 +2952,7 @@ var ConfermaObiettiviModal = class extends import_obsidian.Modal {
     new import_obsidian.Setting(c).setName("Conferma").setHeading();
     c.createEl("p", { text: this.messaggio });
     new import_obsidian.Setting(c).addButton((b) => b.setButtonText("Annulla").onClick(() => this.close())).addButton(
-      (b) => b.setButtonText("S\xEC, procedi").setWarning().onClick(() => {
+      (b) => b.setButtonText("S\xEC, procedi").setDestructive().onClick(() => {
         this.close();
         this.conferma();
       })
@@ -2938,7 +2969,7 @@ var ModificaObiettivoModal = class extends import_obsidian.Modal {
     this.plugin = plugin;
     this.alSalvataggio = alSalvataggio;
     this.nuovo = !ob;
-    this.bozza = ob ? { ...ob } : { id: nuovoIdObiettivo(), nome: "", azione: "pagine", target: 30, periodo: "day", genere: "" };
+    this.bozza = ob ? { ...ob } : { id: nuovoIdObiettivo(), nome: "", azione: "pagine", target: 30, periodo: "day", genere: "", creato: chiaveGiorno(Date.now()) };
   }
   domandaQuanti() {
     return this.bozza.azione === "pagine" ? "Quante pagine?" : this.bozza.azione === "libri" ? "Quanti libri?" : "Quanti giorni?";
@@ -3254,14 +3285,7 @@ var ObiettiviModal = class extends import_obsidian.Modal {
       const attuale = stato.obiettivi.find((o) => o.id === id);
       const copia = (_a = stato.copie[k]) != null ? _a : attuale ? { nome: attuale.nome, azione: attuale.azione, target: attuale.target, genere: attuale.genere } : null;
       const r = intervalloDaChiave(chiave, periodo);
-      let quando = chiave;
-      if (r) {
-        const primo = new Date(r.inizioMs);
-        const ultimo = new Date(r.fineMs - 1);
-        if (periodo === "day") quando = dataBreve(primo);
-        else if (periodo === "week") quando = `Settimana ${Number(chiave.slice(-2))} \xB7 ${dataBreve(primo)} \u2013 ${dataBreve(ultimo)}`;
-        else if (periodo === "month") quando = primo.toLocaleDateString(lingua, { month: "long", year: "numeric" });
-      }
+      const quando = etichettaPeriodoOb(chiave, periodo);
       const riga = box.createDiv({ cls: "arl-ob-premio" });
       iconaMedaglia(riga, periodo, "is-presa");
       const testo = riga.createDiv({ cls: "arl-ob-premio-testo" });
@@ -3279,7 +3303,7 @@ var ObiettiviModal = class extends import_obsidian.Modal {
         text: `Raggiunto il ${dataBreve(quandoPreso)} alle ${quandoPreso.toLocaleTimeString(lingua, { hour: "2-digit", minute: "2-digit" })}`
       });
       if (copia && r) {
-        const valore = progressoObiettivo({ id, nome: copia.nome, azione: copia.azione, target: copia.target, periodo, genere: copia.genere }, r, libri);
+        const valore = progressoObiettivo({ id, nome: copia.nome, azione: copia.azione, target: copia.target, periodo, genere: copia.genere, creato: "" }, r, libri);
         const unita = copia.azione === "pagine" ? plurale(valore, "pagina", "pagine") : copia.azione === "libri" ? plurale(valore, "libro", "libri") : plurale(valore, "giorno", "giorni");
         testo.createDiv({ cls: "arl-ob-dettagli", text: `Risultato: ${unita} su ${copia.target}` });
       }
@@ -6944,6 +6968,12 @@ var ARLSettingTab = class extends import_obsidian.PluginSettingTab {
           voce("Contatore sul pulsante", "Mostra sul pulsante quanti obiettivi giornalieri sono completati (es. 1/2).", "obiettiviContatore");
           voce("Finestra di festeggiamento", "Quando raggiungi un obiettivo si apre una finestra con i fuochi d'artificio.", "obiettiviFesta");
           voce("Suono di festeggiamento", "Un breve suono quando raggiungi un obiettivo.", "obiettiviSuono");
+          new import_obsidian.Setting(containerEl).setName("Giorni di tolleranza").setDesc("Se inserisci una lettura in ritardo, un periodo finito da non pi\xF9 di questi giorni d\xE0 ancora la medaglia (0 = solo il periodo in corso).").addSlider(
+            (sl) => conTooltip(sl).setLimits(0, 30, 1).setValue(s.obiettiviTolleranza).onChange(async (v) => {
+              s.obiettiviTolleranza = v;
+              await this.plugin.salvaImpostazioni();
+            })
+          );
         }
       },
       {
