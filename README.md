@@ -49,6 +49,8 @@
   - [Records tab](#records-tab)
   - [Manage menu](#manage-menu)
   - [Light by design](#light-by-design)
+  - [Challenges bar](#challenges-bar)
+- [Your reading year](#your-reading-year)
 - [Navigation](#navigation)
 - [Book details](#book-details)
 - [Reading progress, bar and chart](#reading-progress-bar-and-chart)
@@ -79,7 +81,8 @@
 - **Live ARL and stars** while you answer, and a coloured bar that highlights the **current question** (colours configurable).
 - **Library list** with live search, status filter, sortable columns, configurable and re-orderable columns, sticky header and footer, exact scroll restoration, totals.
 - **Image gallery** per book (thumbnails, actual-size viewer, optional **captions**), **characters**, **quotes/annotations**, **awards**, **price**, **return date** (loans), **covers** (from the vault, from your computer, or by link).
-- **Goals**: reading goals per day, week, month or year (pages read, books finished, reading days) with medals, streaks and a celebration, plus a **Records** tab (longest/shortest book, top 3 genres, most expensive, most stars, highest and lowest ARL).
+- **Goals**: reading goals per day, week, month or year (pages read, books finished, reading days) with medals, streaks and a celebration, plus a **Challenges bar** in the library for monthly and yearly goals and a **Records** tab (longest/shortest book, top 3 genres, most expensive, most stars, highest and lowest ARL).
+- **Your reading year**: a yearly summary with books and pages per month, stars, genres, authors, highlights, comparison with the previous year and goal medals; can be saved as a note.
 - **Library information window**: statistics on the whole library (longest/shortest books, reading periods, breaks between books, books per star rating and per genre…).
 - **Full appearance control**: language, font family/size/colour, interface width, cover height, bar thickness and colours, chart style.
 - Works on desktop and mobile (`isDesktopOnly: false`).
@@ -288,7 +291,7 @@ Existing sets without a `colori` line keep working with the default palette; the
 - **Configurable columns** (*Settings → List columns*): show/hide and **drag to reorder**. *Title* and *Author* are always visible. Available columns: Code, Title, Author, Publisher, Genre, Set, Pages, Price, Reading dates, Days, ARL, Rating (stars), Return, Time elapsed (days between the end of the previous book and the start of this one; hover to see the previous book), Award.
 - ARL values are coloured by score band.
 - The **Rate book** page uses the same list, with books still to be rated first.
-- The toolbar at the top of the plugin reads: **New book · Library · Virtual library · Library information · Rate book · Evaluation sets · Goals**.
+- The toolbar at the top of the plugin reads: **New book · Library · Virtual library · Library information · Reading year · Rate book · Evaluation sets · Goals**.
 
 ![The Library information window: statistics on the whole library on two columns](screenshots/Screenshot25.jpg)
 
@@ -424,6 +427,8 @@ Press **New goal** (top left of the window). A goal is defined by:
 
 A live preview shows the name the goal will have. Examples: *30 pages per day*, *600 pages per month*, *8,000 pages per year*, *1 book per week*, *5 reading days per week*.
 
+**Editing a goal is a configuration step**: when you save a change, the medal of the period in progress is removed and the goal no longer counts as done; it is awarded again only if the new target is really reached. Medals of past periods are not touched.
+
 On each goal row you can **edit** (pencil) or **delete** (bin: press twice within three seconds, to avoid deleting by mistake).
 
 ### How progress is counted
@@ -475,9 +480,40 @@ The **Manage** button (bottom left) offers, always with a confirmation:
 - reset medals and streak (your goals stay; goals already reached in the current period are not awarded again);
 - reset everything.
 
+### Challenges bar
+
+Monthly and yearly goals can be kept in view in a **Challenges** bar under the title of *Library* and *Virtual library*.
+
+- In the goal editor (month or year only) turn on **Show in the library bar**; a second option, **Stays visible when completed**, decides whether the goal remains (with a green ✓) or disappears once done. Defaults: not shown in the bar, and stays visible once completed.
+- In the *Month* and *Year* tabs of the Goals window each goal has an **eye** icon to add or remove it from the bar with one click.
+- Each cell shows the period medal, the goal name, `done/target` and a progress bar. Click a cell to open the Goals window on that tab; **drag a cell** to reorder the bar (the order is saved; by default shortest periods come first, monthly then yearly). **▾ Challenges** collapses the bar (remembered).
+- The bar stays fixed under the title while the book list scrolls underneath. Cells are as wide as their text (names are never abbreviated); if they do not fit on one row, whole cells move to the next row.
+- With no eligible goals the bar is not shown at all. *Settings → Goals → Show challenges in the library* turns it off globally, and *Challenges text size* (10–20 px) sets the size of its text.
+- It updates when a book changes, using the same single pass that checks goals: no timers.
+
 ### Light by design
 
 There is **no background process and no timer**. Progress is computed only when a book changes or when you open the window, straight from your notes. The only data saved (in the plugin's `data.json`, not in your notes) are the goals, the earned medals and a small copy of each rewarded goal. In English the whole feature is translated, like the rest of the plugin.
+
+## Your reading year
+
+The **Reading year** button (toolbar, right after *Library information*, and the command *Your reading year*) opens a summary of one year of reading. The window lays the data out on two columns, to avoid scrolling. Use the **◄ ►** arrows to move between years (the years with books or readings, plus the current one). It is calculated when you open it or change year, from data you already have: nothing is stored and nothing runs in the background.
+
+What the window shows:
+
+- **Main figures**: books read, pages read, reading days, average ARL and total spent (in your chosen currency). If the previous year has data, a line compares them (*books +3 ▲, pages +820 ▲*).
+- **Pages per month**: a bar for each month, with the best month marked; below, the **books finished per month**.
+- **Stars**: how many of the year's books got 5, 4, 3… stars.
+- **Genres** (top 5, the rest grouped as *Others*) and the **most read authors**.
+- **Highlights of the year**: the best and the worst book (by ARL score), the longest and the shortest, the book read fastest and slowest (days between start and end), the **record day** (most pages in a single day) and the **longest reading streak** (consecutive days with a logged reading). Ties are listed together.
+- **Goals**: the medals earned in that year (bronze, silver, gold, trophy), by the date they were earned.
+
+How it is counted:
+
+- A book belongs to the year of its **end date**. Books already rated but without an end date cannot be placed in a year: the window says how many are left out.
+- **Pages and reading days** come from the readings logged day by day, so a book started in December and finished in January contributes its December pages to the old year and the January pages to the new one. For this reason the year's pages may differ from the sum of the pages of the books finished that year.
+
+**Save as note** writes the same summary as a Markdown note (`Reading year 2026.md`, or *Anno di lettura 2026.md* in Italian) in the books folder, with tables and text bars. The note starts with a marker line: the plugin overwrites it only if it was generated by the plugin, so a note of yours with the same name is never touched.
 
 ## Navigation
 
@@ -574,7 +610,7 @@ Set a **return date** and the plugin tracks it: the list and the detail show *ti
 | Section | Options |
 |---|---|
 | **General** | Interface **language** (English / Italian) · **Price currency** (Euro, USD, GBP, JPY, CHF… or a custom symbol, before/after the amount; default Euro) · **Save folder** for books · **Evaluation sets folder** · **Covers folder** · **Questions per screen** (1/2/5/10) · **Live ARL and stars** (shows the score and stars at the top right while you answer, updating at every answer) · **Highlight the question** (on/off, background colour, text colour, preview) · **Open full screen** (hides the Obsidian sidebars while the plugin is open, restores them on exit) · **Interface width** (600–2400 px, or full width) |
-| **Goals** | Enable goals (shows/hides the button and stops all calculation) · counter on the button · celebration window · celebration sound · grace days for late entries (0–30, default 7) |
+| **Goals** | Enable goals (shows/hides the button and stops all calculation) · counter on the button · celebration window · celebration sound · grace days for late entries (0–30, default 7) · show challenges in the library · challenges text size (10–20 px) |
 | **List totals bar** | Toggle each item: books and total price, books per star rating, most pages, fewest pages, genres read |
 | **List columns** | Show/hide and drag-to-reorder every column |
 | **Text** | **Font** family (theme default or a list of fonts) · **Font size** · **Text colour** |
@@ -651,6 +687,7 @@ All available from the command palette:
 - **Rate book**
 - **Evaluation sets**
 - **Goals**
+- **Your reading year**
 
 (and the ribbon book icon).
 
@@ -674,6 +711,7 @@ The plugin follows [semantic versioning](https://semver.org/): *major.minor.patc
 
 | Version | Requires Obsidian | What changed | Details |
 |---|---|---|---|
+| **1.0.7** | 1.13.0 | New **Challenges bar**: monthly/yearly goals chosen with a flag (or the eye icon) stay in view under the title of Library and Virtual library, with progress, optional visibility once completed, collapse and a global setting. New **Reading year** window (toolbar button after *Library information* and command): yearly summary with books, pages, reading days, average ARL and spending, pages and books per month, stars, genres, most read authors, highlights (best/worst, longest/shortest, fastest/slowest, record day, longest reading streak), comparison with the previous year, goal medals earned, and **Save as note**. The toolbar wraps onto a second line on narrow windows. | [Release notes 1.0.7](RELEASE_NOTES.md#books-and-reviews-107) |
 | **1.0.6** | 1.13.0 | Obsidian review clean-up: the fireworks animation now uses `window.requestAnimationFrame` / `window.cancelAnimationFrame`, so it also works in pop-out windows; the confirmation button of the Goals window uses the new `setDestructive()` instead of the deprecated `setWarning()`. **Goals, late entries:** a reading logged the next day (or up to 7 days late, adjustable) now earns the medal of the day, week, month or year it belongs to, with a celebration that names that period; new goals count only from their creation day. No change to your notes.  [Release notes 1.0.6](RELEASE_NOTES.md#books-and-reviews-106) |
 | **1.0.5** | 1.13.0 | New **Goals** feature: pages read per day/week/month/year (counted day by day from your reading logs), books finished and reading days, optional genre filter; bronze/silver/gold/trophy medals, streaks, milestones, celebration with fireworks and sound; **Records** tab with longest/shortest book, top 3 genres, most expensive, most stars, highest and lowest ARL. New Goals button after *Evaluation sets*, command and settings section.  [Release notes 1.0.5](RELEASE_NOTES.md#books-and-reviews-105) |
 | **1.0.4** | 1.13.0 | «Rate book» now remembers the last rating set you chose and preselects it for the next book, instead of falling back to the default set. New **Price currency** option (Settings › General): Euro, US dollar, pound, yen, Swiss franc and more, or any symbol of your own, with the symbol before or after the amount. Default: Euro, symbol before (€ 12,50). Only the display changes; prices in your notes stay plain numbers. Review-bot fixes: settings no longer use the deprecated `display()` method (pages refresh themselves), and release files now carry GitHub build-provenance attestations.  [Release notes 1.0.4](RELEASE_NOTES.md#books-and-reviews-104) |

@@ -8,6 +8,7 @@
 }
 .arl-menubar {
 	display: flex;
+	flex-wrap: wrap;
 	gap: 6px;
 	padding-bottom: 10px;
 	margin-bottom: 14px;
@@ -241,6 +242,7 @@
 	padding: 4px 0 8px;
 }
 .arl-lista-testa {
+	display: flow-root;
 	position: sticky;
 	top: 0;
 	z-index: 4;
@@ -1447,4 +1449,226 @@
 .arl-festa-quando {
 	color: var(--text-muted);
 	font-size: var(--font-ui-smaller);
+}
+
+/* Il tuo anno di lettura */
+.modal.arl-an-modal {
+	width: min(1000px, 96vw);
+	max-height: 92vh;
+}
+.arl-an-modal .modal-content {
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+.arl-an-testa {
+	padding-top: 6px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin-bottom: 8px;
+}
+.arl-an-testa h2 {
+	margin: 0;
+}
+.arl-an-nav {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-right: 36px; /* spazio per il tasto di chiusura della finestra */
+}
+.arl-an-anno {
+	min-width: 3em;
+	text-align: center;
+	font-size: var(--font-ui-large);
+	font-weight: var(--font-bold);
+}
+.arl-an-corpo {
+	flex: 1;
+	min-height: 240px;
+	overflow-y: auto;
+	padding-right: 4px;
+}
+.arl-an-colonne {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	column-gap: 28px;
+}
+.arl-an-colonna {
+	min-width: 0;
+}
+.arl-an-colonna > h4:first-child {
+	margin-top: 16px;
+}
+@media (max-width: 760px) {
+	.arl-an-colonne {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.arl-an-corpo h4 {
+	margin: 16px 0 6px;
+}
+.arl-an-tessere {
+	display: grid;
+	grid-template-columns: repeat(5, 1fr);
+	gap: 8px;
+}
+.arl-an-tessera {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 10px 4px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	text-align: center;
+}
+.arl-an-confronto {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 14px;
+	margin-top: 8px;
+	color: var(--text-muted);
+}
+.arl-an-su {
+	color: var(--color-green);
+}
+.arl-an-giu {
+	color: var(--color-red);
+}
+.arl-an-barre {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+.arl-an-riga {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.arl-an-et {
+	flex: 0 0 96px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.arl-an-riga .arl-ob-barra {
+	flex: 1;
+	margin-top: 0;
+	height: 10px;
+}
+.arl-an-val {
+	min-width: 48px;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+.arl-an-mesi {
+	width: 100%;
+	border-collapse: collapse;
+	text-align: center;
+}
+.arl-an-mesi th,
+.arl-an-mesi td {
+	padding: 4px 2px;
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+.arl-an-mesi th {
+	color: var(--text-muted);
+	font-weight: var(--font-normal);
+	font-size: var(--font-ui-smaller);
+}
+.arl-an-elenco {
+	color: var(--text-normal);
+}
+.arl-an-medaglie {
+	display: flex;
+	gap: 18px;
+}
+.arl-an-medaglia {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+@media (max-width: 600px) {
+	.arl-an-tessere {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+/* Barra delle sfide */
+.arl-sfide {
+	margin: 0;
+	padding: 0 0 8px;
+}
+.arl-sfide-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 0 6px 0 2px;
+	margin-bottom: 4px;
+	background: transparent;
+	box-shadow: none;
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+.arl-sfide-freccia {
+	display: inline-flex;
+}
+.arl-sfide {
+	font-size: var(--arl-sfide-font, 13px);
+}
+.arl-sfide-griglia {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+.arl-sfida {
+	padding: 6px 10px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	cursor: pointer;
+	flex: 0 0 auto;
+}
+.arl-sfida:hover {
+	border-color: var(--interactive-accent);
+}
+.arl-sfida.is-fatta {
+	border-color: var(--color-green);
+}
+.arl-sfida.is-fatta .arl-ob-pieno {
+	background: var(--color-green);
+}
+.arl-sfida-alto {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+.arl-sfida-nome {
+	flex: 1;
+	white-space: nowrap;
+	font-weight: var(--font-semibold);
+}
+.arl-sfida-conta {
+	font-variant-numeric: tabular-nums;
+	color: var(--text-muted);
+	white-space: nowrap;
+}
+.arl-ob-azioni .is-attivo {
+	color: var(--interactive-accent);
+}
+.arl-sfide-fisse {
+	display: flow-root;
+	position: sticky;
+	top: 0;
+	z-index: 4;
+	background: var(--background-primary);
+}
+.arl-sfida.is-trascinata {
+	opacity: 0.4;
+}
+.arl-sfida.is-prima {
+	box-shadow: -3px 0 0 var(--interactive-accent);
+}
+.arl-sfida.is-dopo {
+	box-shadow: 3px 0 0 var(--interactive-accent);
 }

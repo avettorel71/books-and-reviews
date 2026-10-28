@@ -1,3 +1,16 @@
+# Books and Reviews 1.0.7
+
+- New **Challenges bar** under the title of *Library* and *Virtual library*: monthly and yearly goals marked **Show in the library bar** (editor flag, or the eye icon in the Month/Year tabs) with medal, name, `done/target` and progress bar. A second flag decides whether a completed goal stays (green ✓) or disappears. Click a cell to open the Goals window on its tab; drag cells to reorder them (saved, default monthly then yearly); the bar can be collapsed, and turned off in *Settings → Goals*. It refreshes with the existing goal check (no timers) and is hidden when there is nothing to show. Cells are as wide as their text (never abbreviated) and the text size is adjustable in *Settings → Goals*. The bar stays fixed at the top while the book list scrolls underneath.
+- New **Reading year** window (button after *Library information*, also a command): choose a year with ◄ ► and see books, pages, reading days, average ARL and total spent; pages per month (best month marked) and books per month; stars; genres and most read authors; highlights of the year (best and worst book, longest and shortest, read fastest and slowest, record day, longest reading streak); comparison with the previous year; goal medals earned in the year.
+- The Reading year window lays the data out on two columns, so it fits without scrolling on normal screens.
+- Editing a goal removes the medal of the period in progress and the "done" state: it is awarded again only if the new target is reached. Past medals are untouched.
+- Books count in the year of their end date; pages and reading days come from the daily readings. Books rated but without an end date are reported as not counted.
+- **Save as note** writes the summary as a Markdown note in the books folder; an existing note is overwritten only if the plugin generated it.
+- The toolbar wraps onto a second line on narrow windows instead of overflowing.
+- Nothing runs in the background and nothing new is stored: the summary is computed when you open the window or change year.
+
+---
+
 # Books and Reviews 1.0.6
 
 Maintenance release: code-quality fixes from the Obsidian review.
