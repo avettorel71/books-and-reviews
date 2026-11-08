@@ -1,3 +1,11 @@
+# Books and Reviews 1.0.8
+
+Maintenance release: code-quality fixes from the Obsidian review.
+
+- CSS lint: the two-column layout of the Reading year window now uses `gap` instead of `column-gap` (flagged as a partially supported multicolumn feature).
+
+---
+
 # Books and Reviews 1.0.7
 
 - New **Challenges bar** under the title of *Library* and *Virtual library*: monthly and yearly goals marked **Show in the library bar** (editor flag, or the eye icon in the Month/Year tabs) with medal, name, `done/target` and progress bar. A second flag decides whether a completed goal stays (green ✓) or disappears. Click a cell to open the Goals window on its tab; drag cells to reorder them (saved, default monthly then yearly); the bar can be collapsed, and turned off in *Settings → Goals*. It refreshes with the existing goal check (no timers) and is hidden when there is nothing to show. Cells are as wide as their text (never abbreviated) and the text size is adjustable in *Settings → Goals*. The bar stays fixed at the top while the book list scrolls underneath.
